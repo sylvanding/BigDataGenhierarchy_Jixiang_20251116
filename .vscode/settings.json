@@ -1,0 +1,12 @@
+{
+  // 启用 EditorConfig 支持
+  "editor.formatOnSave": false, // 推荐：保存时自动格式化
+
+  // Java 相关配置
+  "java.format.enabled": true,
+  "java.format.settings.url": "https://raw.githubusercontent.com/google/styleguide/gh-pages/eclipse-java-google-style.xml",
+
+  // Checkstyle 插件配置
+  "java.checkstyle.configuration": "${workspaceFolder}/config/checkstyle/google_checks.xml", // 指向你的 Checkstyle 配置文件
+  "java.checkstyle.version": "8.45.1" // 指定一个稳定的 Checkstyle 版本
+}

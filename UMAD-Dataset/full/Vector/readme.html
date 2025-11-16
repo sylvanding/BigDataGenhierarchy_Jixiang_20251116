@@ -1,0 +1,111 @@
+<h2><a name="vector">Vector</a></h2>
+<table width="100%" border="1">
+  <tr>
+    <td valign="top"><b>Dataset</b></td>
+    <td>
+      (1)
+      <a href="uniformvector-20dim-1m.txt.gz">Uniform 20-d vector (171M)</a>
+      <br />
+      Synthetic dataset, 1 million uniformly distributed vectors randomly
+      selected from the 20-d [0,1] hyper-unit cube.
+      <p>
+        (2)
+        <a href="randomvector-5-1m.gz">Uniform 5-d vector (44M)</a>
+        <br />
+        Synthetic dataset, 1 million uniformly distributed vectors randomly
+        selected from the 5-d [0,1] hyper-unit cube.
+      </p>
+
+      <p>
+        (3)
+        <a href="gauss.1mil.vec.tgz">Clustered vector (36M)</a>
+        <br />
+        Synthetic dataset, 1 Million vectors selected form the 10-d [0,1] unit
+        square, forming 10 clusters.
+      </p>
+
+      <p>
+        (4)
+        <a href="clusteredvector-2d-100k-100c.txt.gz">
+          Clustered vector (647K)
+        </a>
+        <br />
+        Synthetic dataset, 100k vectors selected form the 2-d [0,1] unit square,
+        forming 100 clusters.
+      </p>
+
+      <p>
+        (5)
+        <a href="clusteredvector-2d-100k-100c.txt.gz">
+          3-d Geospatial data (647K)
+        </a>
+        <br />
+        2,034,953 vectors from a small subset of points from a big bang
+        simulation.
+      </p>
+
+      <p>
+        (6)US Cartographic Boundary Files:
+        <a href="hawii.txt.gz">Hawii boundary file (123k)</a>
+        ,
+        <a href="texas.txt.gz">Texas boundary file (3.3M)</a>
+        <a href="gis.vec.tgz">All 50 states and Puerto Rico (61M)</a>
+        <br />
+        These data is downloaded from the U.S. Census Bureau website on May 09,
+        2007. There are the "Cartographic Boundary Files" from (
+        <a href="http://www.census.gov/geo/www/cob/bdy_files.html">
+          http://www.census.gov/geo/www/cob/bdy_files.html
+        </a>
+        ). Be specific, there are from the "Census Block Groups" of year 2000: (
+        <a href="http://www.census.gov/geo/www/cob/bg2000.html">
+          http://www.census.gov/geo/www/cob/bg2000.html
+        </a>
+        ). There are of the "ARC/INFO Ungenerate (ASCII)" format. The downloaded
+        files are plain text files with some meta data. In our data files, these
+        mete data are removed, and only the 2-d coordinates are kept. Each line
+        contains the two coordinate of a point, separated by while space. There
+        may or maynot be while space at the beginning or end of the lines. File
+        size (number of points)
+        <br />
+        ----------------------------
+        <br />
+        texas.txt: 566,150 (194,724 distinct points), boundary file of Texas,
+        from file: bg48_d00.dat
+        <br />
+        hawii.txt: 22,255 (9290 distinct points), boundary file of Hawii, from
+        file: bg15_d00.dat
+        <br />
+        gis.vec: 9,685,974 (3,188,005 distinct points), boundary files of all 50
+        states and Puerto Rico
+        <br />
+      </p>
+    </td>
+  </tr>
+
+  <tr>
+    <td valign="top"><b>File format:</b></td>
+    <td>
+      The first line of each file consists of two numbers, the dimension of the
+      vectors, and the number of vectors, separated by white space. Then, each
+      line is a vector, with each dimension separated by white spaces.
+    </td>
+  </tr>
+
+  <tr>
+    <td valign="top"><b>Distance metric</b></td>
+    <td>Any L-metric</td>
+  </tr>
+
+  <tr>
+    <td valign="top"><b>In MoBIoS Index</b></td>
+    <td>
+      Data type: mobios.type.DoubleVector
+      <br />
+      Distance metric: mobios.dist.LMetric
+      <br />
+      Suggested range query radii:0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3 (for
+      synthetic datasets); 0, 0.02, 0.04, 0.06, 0,08, 0.1 (for boundary data)
+    </td>
+  </tr>
+</table>
+<p></p>

@@ -1,0 +1,294 @@
+<html>
+<head>
+<title>Test suite for distance-based/metric space indexing</title>
+</head>
+<body>
+<h1 align=center>Test suite for distance-based/metric space indexing</h1>
+This page describes a workbench for distance-based (metric space) indexing.  Several data types, together with the file format and their distance functions, are discussed.<p>
+Available data types are:<br>
+<a href = "#vector">Vector</a><br>
+<a href = "#protein">Protein sequence</a><br>
+<a href = "#dna">DNA sequence</a><br>
+<a href = "#mass">Peptide fragmentation spectrum</a><br>
+<a href = "#image">Image</a><p>
+The test suite has been used to evaluate the MoBIoS Index.  The <a href="http://www.cs.utexas.edu/~mobios">Molecular Biological Information System (MoBIoS)</a> is a next generation Database Management System (DBMS) aiming at biological applications.  It is composed of a storage manager, an extended SQL language, named mSQL, and some biological applications.  The novelty of the storage manager is the distance-based index structure, named MoBIoS Index.  Written in JAVA, MoBIoS Index supports similarity queries of any data type that can be abstracted into general metric space.  The MoBIoS Index has some built-in data types, such as vector, gene sequence, image.  User-defined data types are also supported.  For detail and download, please see the <a href="http://www.cs.utexas.edu/~mobios">MoBIoS website</a>. 
+
+All these data types and the distance metric are defined in MoBIoS Index.  For each data type, the corresponding data type and distance function in MoBIoS Index are listed.  Please contact <a href = "http://www.cs.utexas.edu/~rmao">Rui Mao</a> (rmao AT cs DOT utexas DOT edu)<p>
+
+If you would like to use this test suite, please cite:<p>
+Rui Mao, Weijia Xu, Smriti Ramakrishnan, Glen Nuckolls, Daniel P. Miranker. <a href="http://conferences.computer.org/Bioinformatics/CSB2005/PDF3/39_maor_distancebasedsearch.pdf">"On Optimizing Distance-Based Similarity Search for Biological Databases"</a>. In the Proceedings of the 2005 IEEE Computational Systems Bioinformatics Conference, Page 351-361, August 8-11, 2005, Stanford University, California, USA. (<a href="http://portal.acm.org/citation.cfm?id=1084011.1084138&coll=&dl=GUIDE&CFID=15151515&CFTOKEN=6184618#">BibTex (from ACM Portal)</a>)<p>
+
+or for the image dataset, please cite:<p>
+Rui Mao, Qasim Iqbal, Wenguo Liu, Daniel P. Miranker. <a href = "http://ieeexplore.ieee.org/iel5/10445/33169/01562627.pdf?tp=&isnumber=&arnumber=1562627">"Case Study: Distance-Based Image Retrieval in the MoBIoS DBMS"</a>. In the Proceedings of The 5th International Conference on Computer and Information Technology (CIT2005), page 49-55, September 21-23, 2005, Shanghai, China. (<a href="http://portal.acm.org/citation.cfm?id=1104770&coll=&dl=GUIDE&CFID=15151515&CFTOKEN=6184618#">BibTex (From ACM Portal)</a>)<p>
+
+
+<hr>
+
+<h2><a name="vector">Vector</a></h2>
+<table width = 100% border=1 >
+<tr>
+<td  valign=top><b>Dataset</b></td>
+<td>
+(1) <a href = "uniformvector-20dim-1m.txt.gz">Uniform 20-d vector (171M)</a><br>
+Synthetic dataset, 1 million uniformly distributed vectors randomly selected from the 20-d [0,1] hyper-unit cube.<p>
+(2) <a href = "randomvector-5-1m.gz">Uniform 5-d vector (44M)</a><br>
+Synthetic dataset, 1 million uniformly distributed vectors randomly selected from the 5-d [0,1] hyper-unit cube.<p>
+(3) <a href = "gauss.1mil.vec.tgz">Clustered vector (36M)</a><br>
+Synthetic dataset, 1 Million vectors selected form the 10-d [0,1] unit square, forming 10 clusters.
+<p>(4) <a href = "clusteredvector-2d-100k-100c.txt.gz">Clustered vector (647K)</a><br>
+Synthetic dataset, 100k vectors selected form the 2-d [0,1] unit square, forming 100 clusters.
+<p>(5) <a href = "clusteredvector-2d-100k-100c.txt.gz">3-d Geospatial data (647K)</a><br>
+2,034,953 vectors from a small subset of points from a big bang simulation.
+<p>
+(6)US Cartographic Boundary Files: <a href = "hawii.txt.gz">Hawii boundary file (123k)</a>, <a href = "texas.txt.gz">Texas boundary file (3.3M)</a> <a href = "gis.vec.tgz">All 50 states and Puerto Rico (61M)</a><br>
+These data is downloaded from the U.S. Census Bureau website on May 09, 2007.
+There are the "Cartographic Boundary Files" from (<a href = "http://www.census.gov/geo/www/cob/bdy_files.html">http://www.census.gov/geo/www/cob/bdy_files.html</a>). 
+Be specific, there are from the "Census Block Groups" of year 2000: (<a href = "http://www.census.gov/geo/www/cob/bg2000.html">http://www.census.gov/geo/www/cob/bg2000.html</a>). 
+There are of the "ARC/INFO Ungenerate (ASCII)" format.
+The downloaded files are plain text files with some meta data.  In our data files, these mete data are removed, and only the 2-d coordinates are kept.
+Each line contains the two coordinate of a point, separated by while space.  There may or maynot be while space at the beginning or end of the lines.
+
+File size (number of points)<br>
+----------------------------<br>
+texas.txt: 566,150 (194,724 distinct points), boundary file of Texas, from file: bg48_d00.dat<br>
+hawii.txt:  22,255 (9290 distinct points), boundary file of Hawii, from file: bg15_d00.dat<br>
+gis.vec:  9,685,974 (3,188,005 distinct points), boundary files of all 50 states and Puerto Rico<br>
+
+</td>
+</tr>
+
+<tr>
+<td  valign=top><b>File format:</b></td>
+<td>The first line of each file consists of two numbers, the dimension of the vectors, and the number of vectors, separated by white space.
+     Then, each line is a vector, with each dimension separated by white spaces.</td>
+</tr>
+
+<tr>
+<td  valign=top><b>Distance metric</b></td>
+<td>Any L-metric</td>
+</tr>
+
+<tr>
+<td valign=top><b>In MoBIoS Index</b></td>
+<td>Data type: mobios.type.DoubleVector<br>
+    Distance metric: mobios.dist.LMetric<br>
+    Suggested range query radii:0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3 (for synthetic datasets); 0, 0.02, 0.04, 0.06, 0,08, 0.1 (for boundary data)</td>
+</tr>
+
+</table>
+<p>
+
+
+<hr>
+
+<h2><a name="protein">Protein sequence</a></h2>
+<table width = 100% border=1 >
+<tr>
+<td valign=top><b>Dataset</b></td>
+<td><a href = "nrall.fasta.gz">Protein sequence (370M)</a><br>
+Protein sequence downloaded from GenBank.
+</td></tr>
+
+
+<td  valign=top><b>File format:</b></td>
+<td><a href="http://en.wikipedia.org/wiki/Fasta_format">FASTA format</a></td></tr>
+
+<td valign=top><b>Distance metric</b></td>
+<td><a href = "http://en.wikipedia.org/wiki/Sequence_alignment">Global alignment</a> on 6-mers (fragments of length 6) with the <a href = "http://bioinformatics.oxfordjournals.org/cgi/content/abstract/bth065v1">mPAM substitution matrix</a>.</td></tr>
+
+<td valign=top><b>In MoBIoS Index</b></td>
+<td>Data type: mobios.type.Peptide<br>
+    Distance metric: mobios.dist.WHDGlobalSequenceFragmentMetric<br>
+    Suggested range query radii:0, 1, 2, 3, 4, 5, 6</td></tr>
+
+</table>
+<p>
+
+
+<hr>
+
+<h2><a name="dna">DNA sequence</a></h2>
+<table width = 100% border=1 >
+<tr>
+<td  valign=top><b>Dataset</b></td>
+<td><a href = "arab.tar.gz">Arabidopsis thaliana genome (34M)</a>
+<td><a href = "arab.1mil.5mer.tgz">1 Million k-mers of length 5 from the Arabidopsis thaliana genome (4M)</a>
+</td></tr>
+
+
+<td valign=top><b>File format:</b></td>
+<td><a href="http://en.wikipedia.org/wiki/Fasta_format">FASTA format</a></td></tr>
+
+<td  valign=top><b>Distance metric</b></td>
+<td>Hamming distance on 18-mers.</td></tr>
+
+<td  valign=top><b>In MoBIoS Index</b></td>
+<td>Data type: mobios.type.DNA<br>
+    Distance metric: mobios.dist.WHDGlobalSequenceFragmentMetric<br>
+    Suggested range query radii:0, 1, 2, 3, 4, 5, 6</td></tr>
+
+</table>
+<p>
+
+
+<hr>
+
+<h2><a name="mass">Peptide fragmentation spectrum</a></h2>
+<table width = 100% border=1 >
+<tr>
+<td  valign=top><b>Dataset</b></td>
+<td><a href = "mz_0_all.data.gz">Peptide fragmentation spectrum (5.9M)</a><br>
+
+</td></tr>
+
+
+<td  valign=top><b>File format:</b></td>
+<td>Each line represents the vector format of a spectrum</td></tr>
+
+<td  valign=top><b>Distance metric</b></td>
+<td>The distance function of this data type is not metric, but semi-metric.  As a result, the search algorithm is slightly different for this data type.  See:<br>
+<a href="http://bioinformatics.oxfordjournals.org/cgi/content/abstract/22/12/1524?etoc">Ramakrishnan, Smriti R., Rui Mao, Aleksey A. Nakorchevskiy, John T. Prince, Willard S. Willard, Weijia Xu, Edward M. Marcotte, and Daniel P. Miranker. "A fast coarse filtering method for protein identification by mass spectrometry." Bioinformatics, 22(12):1524-1531; doi:10.1093/bioinformatics/btl118. 2006.</a></td></tr>
+
+<td  valign=top><b>In MoBIoS Index</b></td>
+<td>Data type: mobios.type.TandemSpectra<br>
+    Distance metric: mobios.dist.MSMSMetric<br>
+    Suggested range query radii:0, 0.03, 0.06, 0.09</td></tr>
+
+</table>
+<p>
+
+
+<hr>
+
+<h2><a name="image">Image</a></h2>
+<table width = 100% border=1 >
+<tr>
+<td valign=top><b>Dataset</b></td>
+<td><a href = "image-feature.tar.gz">Feature vector of images (2.7M, for indexing)</a><br>
+<a href = "image-source.tar.gz">Source images (38M, for view purpose)</a><br>
+
+</td></tr>
+
+
+<td  valign=top><b>File format:</b></td>
+<td>This image dataset consists of 10221 images. Each image is represented by 3 vectors corresponding to its properties in structure, color, and texture.</td></tr>
+
+<td  valign=top><b>Distance metric</b></td>
+<td>A linear combination of L-metrics on the 3 feature vectors.</td></tr>
+
+<td  valign=top><b>In MoBIoS Index</b></td>
+<td>Data type: mobios.type.Image<br>
+    Distance metric: mobios.dist.ImageMetric<br>
+    Suggested range query radii:0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3</td></tr>
+
+</table>
+<p>
+
+<hr>
+
+<h2><a name="audio">Audio</a></h2>
+
+<table width = 100% border=1 >
+<tr>
+<td  valign=top><b>Dataset</b></td>
+<td>
+(1) <a href = "uniformvector-20dim-1m.txt.gz">dev-clean (337M)</a><br>
+development set, "clean" speech.<p>
+(2) <a href = "randomvector-5-1m.gz">dev-other (314M)</a><br>
+development set, "other", more challenging, speech.<p>
+(3) <a href = "gauss.1mil.vec.tgz">test-clean (36M)</a><br>
+test set, "clean" speech.
+<p>(4) <a href = "clusteredvector-2d-100k-100c.txt.gz">test-other (346M)</a><br>
+test set, "other" speech .<br>
+----------------------------<br>
+The audio dataset mentioned above is derived from the OpenSLR LibriSpeech ASR corpus. LibriSpeech is a corpus of approximately 1000 hours of 16kHz read English speech, prepared by Vassil Panayotov with the assistance of Daniel Povey. The data is derived from read audiobooks from the LibriVox project, and has been carefully segmented and aligned. For more details, please refer to: <a href = "https://www.openslr.org/12/">https://www.openslr.org/12/</a>.
+
+<p>
+
+</td></tr>
+
+<td  valign=top><b>File format:</b></td>
+<td>The original format of the dataset is the common audio format ['.wav', '.mp3', '.flac', '.webm', '.mp4', '.m4a'], and it is necessary to extract its MFCC features to obtain the feature vectors.</td></tr>
+
+<td  valign=top><b>Distance metric</b></td>
+<td>Euclidean distance on the MFCC feature vectors</td></tr>
+
+</table>
+<p>
+
+
+
+<hr>
+
+<h2><a name="geographic information">Geographic information</a></h2>
+<table width = 100% border=1 >
+<tr>
+<td  valign=top><b>Dataset</b></td>
+<td>
+(1) <a href = "Chipotle Locations">Chipotle Locations (2K)</a><br>
+Location of every Chipotle Restaurant within the United States.This dataset comes from the Kaggle Chipotle Locations. For more details, please refer to: <a href = "https://www.kaggle.com/datasets/jeffreybraun/chipotle-locations">https://www.kaggle.com/datasets/jeffreybraun/chipotle-locations</a>. <p>
+(2) <a href = "GeoNames">GeoNames </a><br>
+The GeoNames geographical database covers all countries and contains over eleven million placenames that are available for download free of charge. For more details, please refer to: <a href = "https://www.geonames.org/">https://www.geonames.org/</a>.<p>
+<p>
+
+</td></tr>
+
+<td  valign=top><b>File format:</b></td>
+<td>Chipotle Locations includes information on state, location, address, longitude, and latitude. GeoNames includes information on administrative divisions, postal codes, population, elevation, time zone, longitude, and latitude.</td></tr>
+
+<td  valign=top><b>Distance metric</b></td>
+<td>Great-circle distance on longitude and latitude</td></tr>
+
+</table>
+<p>
+
+<hr>
+
+<h2><a name="graph">Graph</a></h2>
+<table width = 100% border=1 >
+<tr>
+<td  valign=top><b>Dataset</b></td>
+<td>
+(1) <a href = "karate weighted data">karate weighted data (10K)</a><br>
+This dataset contains an undirected graph with 34 nodes and 78 edges, describing the social relationships among members of a karate club [1]. We made some modifications, adding weight values to represent the cost of making contact through that node. <p>
+(2) <a href = "UCINET IV Datasets">UCINET IV Datasets </a><br>
+These datasets include various types of network data, such as social networks, cognitive recall, and cooperative relationships, among others. For more details, please refer to: <a href = "http://vlado.fmf.uni-lj.si/pub/networks/data/ucinet/ucidata.htm">http://vlado.fmf.uni-lj.si/pub/networks/data/ucinet/ucidata.htm</a>.<p>
+<p>
+
+</td></tr>
+
+<td  valign=top><b>File format:</b></td>
+<td>In the karate weighted data dataset, the first column is for the target, the second column is for the source, and the third column is for the weight.</td></tr>
+
+<td  valign=top><b>Distance metric</b></td>
+<td>Shortest path distance</td></tr>
+
+</table>
+[1] Zachary, Wayne W. "An Information Flow Model for Conflict and Fission in Small Groups." Journal of Anthropological Research, 33 (4): 452–473; doi:10.1086/jar.33.4.3629752. 1977.
+<p>
+
+<hr>
+
+<h2><a name="sales records">Sales records</a></h2>
+<table width = 100% border=1 >
+<tr>
+<td  valign=top><b>Dataset</b></td>
+<td>
+ <a href = "Car Sales Data">Car Sales Data (8K)</a><br>
+The dataset originates from the undergraduate graduation project of a student at Shenzhen University, and it contains car sales data from some provinces in China for the years 2016-2017. <p>
+
+<p>
+
+</td></tr>
+
+<td  valign=top><b>File format:</b></td>
+<td>The first line of the document lists the meanings of each dimension, and then, each row corresponds to the numerical values for province, year, month, and sales volume.</td></tr>
+
+<td  valign=top><b>Distance metric</b></td>
+<td>Logarithmic distance</td></tr>
+
+</table>
+<p>
+
+</body>
+</html>
