@@ -28,6 +28,19 @@ public class VectorDataReader {
      * @throws IOException 如果文件读取失败
      */
     public static List<VectorData> readFromFile(String filePath, int maxCount) throws IOException {
+        return readFromFile(filePath, maxCount, true);
+    }
+
+    /**
+     * 从文件读取向量数据
+     * @param filePath 文件路径
+     * @param maxCount 最多读取的数据数量，0表示读取全部
+     * @param verbose 是否打印详细信息
+     * @return 向量数据列表
+     * @throws IOException 如果文件读取失败
+     */
+    public static List<VectorData> readFromFile(String filePath, int maxCount, boolean verbose)
+            throws IOException {
         List<VectorData> vectors = new ArrayList<>();
 
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
@@ -41,14 +54,18 @@ public class VectorDataReader {
             int dimension = header[0];
             int totalCount = header[1];
 
-            System.out.println("数据集信息：");
-            System.out.println("  文件路径: " + filePath);
-            System.out.println("  向量维度: " + dimension);
-            System.out.println("  数据总量: " + totalCount);
+            if (verbose) {
+                System.out.println("数据集信息：");
+                System.out.println("  文件路径: " + filePath);
+                System.out.println("  向量维度: " + dimension);
+                System.out.println("  数据总量: " + totalCount);
+            }
 
             // 确定实际读取数量
             int readCount = (maxCount > 0) ? Math.min(maxCount, totalCount) : totalCount;
-            System.out.println("  读取数量: " + readCount);
+            if (verbose) {
+                System.out.println("  读取数量: " + readCount);
+            }
 
             // 读取向量数据
             String line;
@@ -75,7 +92,7 @@ public class VectorDataReader {
                     linesRead++;
 
                     // 显示进度
-                    if (linesRead % 10000 == 0) {
+                    if (verbose && linesRead % 10000 == 0) {
                         System.out.println("  已读取: " + linesRead + " 条");
                     }
                 } catch (IllegalArgumentException e) {
@@ -83,7 +100,9 @@ public class VectorDataReader {
                 }
             }
 
-            System.out.println("成功读取 " + vectors.size() + " 个向量\n");
+            if (verbose) {
+                System.out.println("成功读取 " + vectors.size() + " 个向量\n");
+            }
         }
 
         return vectors;

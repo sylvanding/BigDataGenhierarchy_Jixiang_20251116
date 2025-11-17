@@ -8,9 +8,9 @@ import java.util.List;
 
 /**
  * 线性扫描范围查询
- * 
+ *
  * 通过线性扫描所有数据对象，计算与查询对象的距离，保留满足条件的结果
- * 
+ *
  * @author Jixiang Ding
  * @version 1.0
  */
@@ -25,6 +25,19 @@ public class LinearScanRangeQuery {
      */
     public static List<MetricSpaceData> execute(List<? extends MetricSpaceData> dataset,
             RangeQuery query, MetricFunction metric) {
+        return execute(dataset, query, metric, true);
+    }
+
+    /**
+     * 执行范围查询
+     * @param dataset 数据集
+     * @param query 查询对象
+     * @param metric 距离函数
+     * @param verbose 是否打印统计信息
+     * @return 查询结果列表（距离 <= radius的所有对象）
+     */
+    public static List<MetricSpaceData> execute(List<? extends MetricSpaceData> dataset,
+            RangeQuery query, MetricFunction metric, boolean verbose) {
 
         List<MetricSpaceData> results = new ArrayList<>();
         long distanceCalculations = 0;
@@ -43,11 +56,13 @@ public class LinearScanRangeQuery {
         }
 
         // 输出统计信息
-        System.out.println("线性扫描范围查询统计:");
-        System.out.println("  数据集大小: " + dataset.size());
-        System.out.println("  查询半径: " + radius);
-        System.out.println("  距离计算次数: " + distanceCalculations);
-        System.out.println("  结果数量: " + results.size());
+        if (verbose) {
+            System.out.println("线性扫描范围查询统计:");
+            System.out.println("  数据集大小: " + dataset.size());
+            System.out.println("  查询半径: " + radius);
+            System.out.println("  距离计算次数: " + distanceCalculations);
+            System.out.println("  结果数量: " + results.size());
+        }
 
         return results;
     }

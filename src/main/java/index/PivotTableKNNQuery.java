@@ -29,6 +29,17 @@ public class PivotTableKNNQuery {
      * @return kNN结果列表（按距离升序排列）
      */
     public static List<KNNResult> execute(PivotTable pivotTable, KNNQuery query) {
+        return execute(pivotTable, query, true);
+    }
+
+    /**
+     * 执行基于Pivot Table的kNN查询
+     * @param pivotTable Pivot Table索引
+     * @param query 查询对象
+     * @param verbose 是否打印详细信息
+     * @return kNN结果列表（按距离升序排列）
+     */
+    public static List<KNNResult> execute(PivotTable pivotTable, KNNQuery query, boolean verbose) {
 
         // 使用优先队列维护k个最近邻
         PriorityQueue<KNNResult> maxHeap = new PriorityQueue<>();
@@ -40,8 +51,10 @@ public class PivotTableKNNQuery {
         int k = query.getK();
         MetricFunction metric = pivotTable.getMetric();
 
-        System.out.println("=== Pivot Table kNN查询 ===");
-        System.out.println("k值: " + k);
+        if (verbose) {
+            System.out.println("=== Pivot Table kNN查询 ===");
+            System.out.println("k值: " + k);
+        }
 
         // 预计算查询对象到所有支撑点的距离
         int numPivots = pivotTable.getPivots().size();
@@ -96,17 +109,22 @@ public class PivotTableKNNQuery {
         List<KNNResult> results = new ArrayList<>(maxHeap);
         results.sort((a, b) -> Double.compare(a.getDistance(), b.getDistance()));
 
-        System.out.println("\n查询统计:");
-        System.out.println("  数据集大小: " + dataset.size());
-        System.out.println("  k值: " + k);
-        System.out.println("  支撑点数量: " + numPivots);
-        System.out.println("  距离计算次数: " + distanceCalculations);
-        System.out.println("  剪枝数量: " + pruned);
-        System.out.println("  需要验证数量: " + verified);
-        System.out
-                .println("  剪枝率: " + String.format("%.2f", 100.0 * pruned / dataset.size()) + "%");
-        System.out.println("  返回结果数: " + results.size());
-        System.out.println("===========================\n");
+        // 保存统计信息到PivotTable
+        pivotTable.setLastQueryStatistics(distanceCalculations, pruned, 0, verified);
+
+        if (verbose) {
+            System.out.println("\n查询统计:");
+            System.out.println("  数据集大小: " + dataset.size());
+            System.out.println("  k值: " + k);
+            System.out.println("  支撑点数量: " + numPivots);
+            System.out.println("  距离计算次数: " + distanceCalculations);
+            System.out.println("  剪枝数量: " + pruned);
+            System.out.println("  需要验证数量: " + verified);
+            System.out.println(
+                    "  剪枝率: " + String.format("%.2f", 100.0 * pruned / dataset.size()) + "%");
+            System.out.println("  返回结果数: " + results.size());
+            System.out.println("===========================\n");
+        }
 
         return results;
     }

@@ -9,9 +9,9 @@ import java.util.Random;
 
 /**
  * 支撑点选择器
- * 
+ *
  * 实现多种支撑点选择算法
- * 
+ *
  * @author Jixiang Ding
  * @version 1.0
  */
@@ -27,19 +27,37 @@ public class PivotSelector {
      */
     public static List<MetricSpaceData> selectPivots(List<? extends MetricSpaceData> dataset,
             int numPivots, PivotSelectionMethod method, MetricFunction metric) {
+        return selectPivots(dataset, numPivots, method, metric, true);
+    }
+
+    /**
+     * 选择支撑点
+     * @param dataset 数据集
+     * @param numPivots 支撑点数量
+     * @param method 选择方法
+     * @param metric 距离函数
+     * @param verbose 是否打印详细信息
+     * @return 支撑点列表
+     */
+    public static List<MetricSpaceData> selectPivots(List<? extends MetricSpaceData> dataset,
+            int numPivots, PivotSelectionMethod method, MetricFunction metric, boolean verbose) {
 
         if (numPivots <= 0) {
             throw new IllegalArgumentException("支撑点数量必须大于0");
         }
 
         if (numPivots > dataset.size()) {
-            System.out.println("警告：支撑点数量大于数据集大小，调整为数据集大小");
+            if (verbose) {
+                System.out.println("警告：支撑点数量大于数据集大小，调整为数据集大小");
+            }
             numPivots = dataset.size();
         }
 
-        System.out.println("开始选择支撑点:");
-        System.out.println("  方法: " + method);
-        System.out.println("  数量: " + numPivots);
+        if (verbose) {
+            System.out.println("开始选择支撑点:");
+            System.out.println("  方法: " + method);
+            System.out.println("  数量: " + numPivots);
+        }
 
         long startTime = System.currentTimeMillis();
         List<MetricSpaceData> pivots;
@@ -62,7 +80,9 @@ public class PivotSelector {
         }
 
         long endTime = System.currentTimeMillis();
-        System.out.println("支撑点选择完成，耗时: " + (endTime - startTime) + " ms\n");
+        if (verbose) {
+            System.out.println("支撑点选择完成，耗时: " + (endTime - startTime) + " ms\n");
+        }
 
         return pivots;
     }

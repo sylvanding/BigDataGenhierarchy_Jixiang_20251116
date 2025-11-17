@@ -29,16 +29,31 @@ public class LinearScanDKNNQuery {
      */
     public static List<KNNResult> execute(List<? extends MetricSpaceData> dataset, DKNNQuery query,
             MetricFunction metric) {
+        return execute(dataset, query, metric, true);
+    }
+
+    /**
+     * 执行dkNN查询
+     * @param dataset 数据集
+     * @param query 查询对象
+     * @param metric 距离函数
+     * @param verbose 是否打印详细信息
+     * @return dkNN结果列表
+     */
+    public static List<KNNResult> execute(List<? extends MetricSpaceData> dataset, DKNNQuery query,
+            MetricFunction metric, boolean verbose) {
 
         // 第一步: 执行kNN查询，获取更多候选（候选集大小是k的10倍）
         int candidateSize = Math.min(query.getK() * 10, dataset.size());
         KNNQuery knnQuery = new KNNQuery(query.getQueryObject(), candidateSize);
-        List<KNNResult> candidates = LinearScanKNNQuery.execute(dataset, knnQuery, metric);
+        List<KNNResult> candidates = LinearScanKNNQuery.execute(dataset, knnQuery, metric, verbose);
 
-        System.out.println("\ndkNN多样化选择过程:");
-        System.out.println("  候选集大小: " + candidates.size());
-        System.out.println("  目标选择数: " + query.getK());
-        System.out.println("  多样性权重: " + query.getDiversityWeight());
+        if (verbose) {
+            System.out.println("\ndkNN多样化选择过程:");
+            System.out.println("  候选集大小: " + candidates.size());
+            System.out.println("  目标选择数: " + query.getK());
+            System.out.println("  多样性权重: " + query.getDiversityWeight());
+        }
 
         // 第二步: 从候选集中贪心选择多样化的k个对象
         List<KNNResult> results = new ArrayList<>();
@@ -49,7 +64,9 @@ public class LinearScanDKNNQuery {
             KNNResult first = candidates.get(0);
             results.add(first);
             selected.add(first.getData());
-            System.out.println("  第1个选择: " + first);
+            if (verbose) {
+                System.out.println("  第1个选择: " + first);
+            }
         }
 
         // 贪心选择剩余的k-1个对象
@@ -90,15 +107,19 @@ public class LinearScanDKNNQuery {
                 selected.add(bestCandidate);
 
                 iteration++;
-                System.out.println(
-                        String.format("  第%d个选择: dist=%.4f, minDistToSelected=%.4f, score=%.4f",
-                                iteration, bestDistToQuery, bestMinDistToSelected, bestScore));
+                if (verbose) {
+                    System.out.println(
+                            String.format("  第%d个选择: dist=%.4f, minDistToSelected=%.4f, score=%.4f",
+                                    iteration, bestDistToQuery, bestMinDistToSelected, bestScore));
+                }
             } else {
                 break;
             }
         }
 
-        System.out.println("dkNN查询完成，返回" + results.size() + "个结果\n");
+        if (verbose) {
+            System.out.println("dkNN查询完成，返回" + results.size() + "个结果\n");
+        }
 
         return results;
     }

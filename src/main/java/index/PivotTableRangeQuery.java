@@ -13,7 +13,7 @@ import java.util.List;
  * 利用三角不等式进行剪枝：
  * - 排除规则: |d(p,q) - d(p,s)| > r => d(q,s) > r，可以剪枝
  * - 包含规则: d(p,q) + d(p,s) <= r => d(q,s) <= r，可以直接包含
- * 
+ *
  * @author Jixiang Ding
  * @version 1.0
  */
@@ -26,6 +26,18 @@ public class PivotTableRangeQuery {
      * @return 查询结果列表
      */
     public static List<MetricSpaceData> execute(PivotTable pivotTable, RangeQuery query) {
+        return execute(pivotTable, query, true);
+    }
+
+    /**
+     * 执行基于Pivot Table的范围查询
+     * @param pivotTable Pivot Table索引
+     * @param query 查询对象
+     * @param verbose 是否打印详细信息
+     * @return 查询结果列表
+     */
+    public static List<MetricSpaceData> execute(PivotTable pivotTable, RangeQuery query,
+            boolean verbose) {
 
         List<MetricSpaceData> results = new ArrayList<>();
         long distanceCalculations = 0;
@@ -37,8 +49,10 @@ public class PivotTableRangeQuery {
         double radius = query.getRadius();
         MetricFunction metric = pivotTable.getMetric();
 
-        System.out.println("=== Pivot Table范围查询 ===");
-        System.out.println("查询半径: " + radius);
+        if (verbose) {
+            System.out.println("=== Pivot Table范围查询 ===");
+            System.out.println("查询半径: " + radius);
+        }
 
         // 预计算查询对象到所有支撑点的距离
         int numPivots = pivotTable.getPivots().size();
@@ -90,17 +104,22 @@ public class PivotTableRangeQuery {
             }
         }
 
-        System.out.println("\n查询统计:");
-        System.out.println("  数据集大小: " + dataset.size());
-        System.out.println("  支撑点数量: " + numPivots);
-        System.out.println("  距离计算次数: " + distanceCalculations);
-        System.out.println("  剪枝数量: " + pruned);
-        System.out.println("  直接包含数量: " + included);
-        System.out.println("  需要验证数量: " + verified);
-        System.out
-                .println("  剪枝率: " + String.format("%.2f", 100.0 * pruned / dataset.size()) + "%");
-        System.out.println("  结果数量: " + results.size());
-        System.out.println("============================\n");
+        // 保存统计信息到PivotTable
+        pivotTable.setLastQueryStatistics(distanceCalculations, pruned, included, verified);
+
+        if (verbose) {
+            System.out.println("\n查询统计:");
+            System.out.println("  数据集大小: " + dataset.size());
+            System.out.println("  支撑点数量: " + numPivots);
+            System.out.println("  距离计算次数: " + distanceCalculations);
+            System.out.println("  剪枝数量: " + pruned);
+            System.out.println("  直接包含数量: " + included);
+            System.out.println("  需要验证数量: " + verified);
+            System.out.println(
+                    "  剪枝率: " + String.format("%.2f", 100.0 * pruned / dataset.size()) + "%");
+            System.out.println("  结果数量: " + results.size());
+            System.out.println("============================\n");
+        }
 
         return results;
     }
