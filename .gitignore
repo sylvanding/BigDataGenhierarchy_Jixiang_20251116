@@ -571,3 +571,7 @@ TSWLatexianTemp*
 UMAD-Dataset/full
 !UMAD-Dataset/full/Vector/readme.html
 !UMAD-Dataset/full/Protein/readme.html
+
+# LFS
+!UMAD-Dataset/full/Protein/unzipped/
+!UMAD-Dataset/full/Vector/unzipped/

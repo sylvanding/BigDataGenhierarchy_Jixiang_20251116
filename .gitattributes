@@ -1,0 +1,2 @@
+UMAD-Dataset/full/Protein/unzipped/**/* filter=lfs diff=lfs merge=lfs -text
+UMAD-Dataset/full/Vector/unzipped/**/* filter=lfs diff=lfs merge=lfs -text
