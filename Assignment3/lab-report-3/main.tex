@@ -21,8 +21,8 @@
   info = {
     % 想要删除某项封面信息，直接删除该项即可。
     % 想要让某项封面信息留空（但是保留下划线），请传入空白符组成的字符串，如"{~}"。
-    % 如需要换行，则用 “\\” 符号分割。
-    title = {大数据泛构实验报告3},
+    % 如需要换行，则用 "\\" 符号分割。
+    title = {大数据泛构实验报告3\\——树状度量空间索引实现与性能对比},
     school = {珠海校区},
     major = {计算机科学与技术},
     studentId = {3120256739},
@@ -42,6 +42,21 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{pifont}
+% Algorithm packages
+\usepackage{algorithm}
+\usepackage{algorithmic}
+% TikZ for drawing
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows,positioning,calc,trees,decorations.pathreplacing}
+% PGFPlots for charts
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+% Multi-row and multi-column tables
+\usepackage{multirow}
+\usepackage{booktabs}
+\usepackage{array}
+% Subfigures
+\usepackage{subcaption}
 
 % 超链接支持（让目录可点击跳转）
 \usepackage[
@@ -82,6 +97,29 @@
 
 \lstset{style=javastyle}
 
+% 伪代码样式
+\lstdefinestyle{pseudocode}{
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue}\bfseries,
+    commentstyle=\color{gray}\itshape,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    stepnumber=1,
+    numbersep=8pt,
+    frame=single,
+    tabsize=4,
+    breaklines=true,
+    xleftmargin=2em,
+    xrightmargin=2em,
+    aboveskip=1em,
+    belowskip=1em,
+    morekeywords={function,if,else,return,for,each,in,while,do,end,then,AND,OR,NOT,to}
+}
+
+% 算法环境配置
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+
 \addbibresource{misc/refs.bib}
 
 % 设置PDF文档属性
@@ -89,8 +127,14 @@
     pdftitle={大数据泛构实验报告3},
     pdfauthor={丁纪翔},
     pdfsubject={大数据实验报告},
-    pdfkeywords={大数据, 度量空间, 相似性查询, 索引}
+    pdfkeywords={大数据, 度量空间, 相似性查询, 树状索引, GH树, VP树}
 }
+
+% 定义一些常用命令
+\newcommand{\ghTree}{GH-Tree}
+\newcommand{\vpTree}{VP-Tree}
+\newcommand{\cmark}{\ding{51}}
+\newcommand{\xmark}{\ding{55}}
 
 \begin{document}
 
@@ -101,11 +145,14 @@
 \tableofcontents
 \clearpage
 
-正文内容...
-
-\section{正文内容}
-
-文章涉及的所有代码均已上传至GitHub仓库：\url{https://github.com/sylvanding/BigDataGenhierarchy_Jixiang_20251116}。
+% 引入各章节内容
+\input{chapters/01-introduction}
+\input{chapters/02-theory}
+\input{chapters/03-implementation}
+\input{chapters/04-correctness}
+\input{chapters/05-experiments}
+\input{chapters/06-analysis}
+\input{chapters/07-conclusion}
 
 \printbibliography[heading=bibliography,title=参考文献]
 

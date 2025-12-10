@@ -1,0 +1,81 @@
+% Chapter 1: Introduction
+\section{引言}
+
+\subsection{研究背景与意义}
+
+度量空间（Metric Space）是一种通用的数据抽象方式，可以涵盖向量、字符串、图像、生物序列等多种数据类型。在度量空间中，数据对象之间的相似性通过满足正定性、对称性和三角不等式的距离函数来度量。相似性查询是度量空间数据管理中最基本的操作之一，包括范围查询（Range Query）和k近邻查询（kNN Query）。
+
+随着大数据时代的到来，如何高效地处理海量度量空间数据成为重要的研究课题。线性扫描方法虽然简单，但时间复杂度为$O(n)$，无法满足大规模数据集的查询需求。因此，设计高效的索引结构来加速相似性查询具有重要的理论意义和实际价值。
+
+树状索引是度量空间索引的重要类别，通过层次化的数据划分实现高效的剪枝，可以显著减少查询时的距离计算次数。GH树（Generalized Hyperplane Tree）和VP树（Vantage Point Tree）是两种经典的树状索引结构，分别采用超平面划分和球形划分策略。
+
+\subsection{任务回顾与目标}
+
+\subsubsection{Assignment 1 \& 2 工作简述}
+
+在Assignment 1中，我们建立了度量空间数据管理的基础设施，包括：
+\begin{itemize}
+    \item 核心抽象类：\texttt{MetricSpaceData}和\texttt{MetricFunction}
+    \item 具体数据类型：向量数据（\texttt{VectorData}）和蛋白质序列（\texttt{ProteinData}）
+    \item 距离函数实现：闵可夫斯基距离和Alignment距离
+    \item 数据读取模块：支持从文件读取向量和蛋白质序列数据
+\end{itemize}
+
+在Assignment 2中，我们实现了基础的查询算法和Pivot Table索引：
+\begin{itemize}
+    \item 线性扫描查询：范围查询、kNN查询、多样化kNN查询
+    \item Pivot Table索引：利用支撑点预计算距离实现查询剪枝
+    \item Pivot选择策略：随机选择、FFT、增量选择等
+\end{itemize}
+
+\subsubsection{Assignment 3 核心目标}
+
+本次Assignment 3的核心目标是实现两种树状度量空间索引——GH树和VP树，并进行全面的性能对比分析。具体任务包括：
+
+\begin{enumerate}
+    \item \textbf{代码实现}：实现GH树和VP树的数据结构、批建算法、范围查询和kNN查询
+    \item \textbf{实验设计}：设计科学的性能对比实验方案，包括评价指标、数据集选择、参数设置等
+    \item \textbf{正确性验证}：通过与线性扫描对比、手工验证等方式证明实现的正确性
+    \item \textbf{性能对比}：在多种数据集上对比GH树和VP树的性能
+    \item \textbf{分析讨论}：分析性能差异的原因，总结两种索引的优缺点，讨论改进方向
+\end{enumerate}
+
+\subsection{实验环境}
+
+本实验的软硬件环境如表\ref{tab:environment}所示。
+
+\begin{table}[htbp]
+    \centering
+    \caption{实验环境配置}
+    \label{tab:environment}
+    \begin{tabular}{ll}
+        \toprule
+        \textbf{项目} & \textbf{配置} \\
+        \midrule
+        操作系统 & Windows 11 \\
+        CPU & Intel Core \\
+        内存 & 16GB \\
+        编程语言 & Java 11 \\
+        构建工具 & Maven 3.8+ \\
+        IDE & VS Code \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{报告结构}
+
+本报告的组织结构如下：
+
+\begin{itemize}
+    \item \textbf{第2章 树状度量空间索引理论基础}：介绍GH树和VP树的基本概念、数据结构和算法原理
+    \item \textbf{第3章 GHT和VPT实现}：详细描述系统架构扩展和核心算法的实现
+    \item \textbf{第4章 功能正确性验证}：通过小规模数据演示和与线性扫描对比验证实现的正确性
+    \item \textbf{第5章 性能对比实验设计与实施}：设计实验方案并在多种数据集上进行实验
+    \item \textbf{第6章 性能对比分析}：分析实验结果，讨论性能差异的原因和改进方向
+    \item \textbf{第7章 总结与展望}：总结本次工作，展望未来研究方向
+\end{itemize}
+
+本项目的完整代码已上传至GitHub仓库：
+
+\url{https://github.com/sylvanding/BigDataGenhierarchy_Jixiang_20251116}
+

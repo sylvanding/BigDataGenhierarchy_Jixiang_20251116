@@ -5,11 +5,11 @@
 %% The original source files were:
 %%
 %% bithesis.dtx  (with options: `cls,report')
-%% 
+%%
 %%     Copyright (C) 2025
 %%     Association of Bit Network Pioneer and any individual authors listed in the documentation.
 %% ------------------------------------------------------------------------------
-%% 
+%%
 %%     This work may be distributed and/or modified under the
 %%     conditions of the LaTeX Project Public License, either
 %%     version 1.3c of this license or (at your option) any later
@@ -19,12 +19,12 @@
 %%        https://www.latex-project.org/lppl.txt
 %%     and version 1.3 or later is part of all distributions of
 %%     LaTeX version 2020/11/27 or later.
-%% 
+%%
 %%     This work has the LPPL maintenance status `maintained'.
-%% 
+%%
 %%     The Current Maintainer of this work is Feng Kaiyu.
 %% ------------------------------------------------------------------------------
-%% 
+%%
 \RequirePackage{expl3,l3keys2e}
 \ProvidesExplClass{bitreport}
   {2025-10-17} {3.8.6} {BIT Thesis Templates}
@@ -94,7 +94,7 @@
 }
 \ProcessOptions\relax
 \LoadClass[zihao=-4]{ctexart}
-\RequirePackage[a4paper,left=3cm,right=2.4cm,top=2.6cm,bottom=2.38cm,includeheadfoot]{geometry}
+\RequirePackage[a4paper,left=2cm,right=2cm,top=1cm,bottom=1cm,includeheadfoot]{geometry}
 \RequirePackage{fancyhdr}
 \RequirePackage{setspace}
 \RequirePackage{caption}

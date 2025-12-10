@@ -1,0 +1,424 @@
+% Chapter 3: Implementation
+\section{GHT和VPT实现}
+
+\subsection{系统架构扩展}
+
+\subsubsection{在原有架构中集成树状索引模块}
+
+在Assignment 1和2的基础上，我们扩展系统架构以支持树状索引。图\ref{fig:architecture}展示了扩展后的系统模块关系。
+
+\begin{figure}[htbp]
+    \centering
+    \begin{tikzpicture}[
+        node distance=1.5cm,
+        box/.style={rectangle, draw, rounded corners, minimum width=2.5cm, minimum height=0.8cm, text centered, font=\small},
+        arrow/.style={->, thick}
+    ]
+        % Core layer
+        \node[box, fill=blue!20] (metric) {MetricSpaceData};
+        \node[box, fill=blue!20, right=0.5cm of metric] (func) {MetricFunction};
+        
+        % Data types
+        \node[box, fill=green!20, below left=1cm and -0.5cm of metric] (vector) {VectorData};
+        \node[box, fill=green!20, right=0.3cm of vector] (protein) {ProteinData};
+        
+        % Index layer
+        \node[box, fill=orange!20, below=2.5cm of metric] (index) {Index Interface};
+        
+        % Tree index
+        \node[box, fill=yellow!20, below left=1cm and -0.5cm of index] (treeindex) {TreeIndex};
+        \node[box, fill=red!20, below left=0.8cm and -0.3cm of treeindex] (ghtree) {GHTree};
+        \node[box, fill=red!20, right=0.3cm of ghtree] (vptree) {VPTree};
+        
+        % Pivot table
+        \node[box, fill=yellow!20, below right=1cm and -0.5cm of index] (pivot) {PivotTable};
+        
+        % Arrows
+        \draw[arrow] (vector) -- (metric);
+        \draw[arrow] (protein) -- (metric);
+        \draw[arrow] (treeindex) -- (index);
+        \draw[arrow] (pivot) -- (index);
+        \draw[arrow] (ghtree) -- (treeindex);
+        \draw[arrow] (vptree) -- (treeindex);
+        
+        % Labels
+        \node[above=0.3cm of metric, font=\footnotesize\bfseries] {Core Layer (Assignment 1)};
+        \node[below=0.2cm of index, font=\footnotesize\bfseries, xshift=-2cm] {Tree Index (Assignment 3)};
+    \end{tikzpicture}
+    \caption{系统架构图}
+    \label{fig:architecture}
+\end{figure}
+
+\subsubsection{更新后的系统模块划分}
+
+表\ref{tab:modules}展示了Assignment 3新增的主要模块。
+
+\begin{table}[htbp]
+    \centering
+    \caption{Assignment 3新增模块}
+    \label{tab:modules}
+    \begin{tabular}{ll}
+        \toprule
+        \textbf{模块/类} & \textbf{功能说明} \\
+        \midrule
+        \texttt{index.Index} & 所有索引结构的统一接口 \\
+        \texttt{index.tree.TreeIndex} & 树索引的抽象基类 \\
+        \texttt{index.tree.TreeNode} & 树节点接口 \\
+        \texttt{index.tree.InternalNode} & 内部节点抽象类 \\
+        \texttt{index.tree.LeafNode} & 叶子节点类 \\
+        \texttt{index.tree.common.TreeConfig} & 树配置类 \\
+        \texttt{index.tree.common.TreeHeightController} & 树高控制器 \\
+        \texttt{index.tree.ghtree.GHTree} & GH树实现 \\
+        \texttt{index.tree.ghtree.GHInternalNode} & GH树内部节点 \\
+        \texttt{index.tree.vptree.VPTree} & VP树实现 \\
+        \texttt{index.tree.vptree.VPInternalNode} & VP树内部节点 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{GHT实现}
+
+\subsubsection{GHT节点数据结构实现}
+
+GH树内部节点的核心实现如下：
+
+\begin{lstlisting}[caption=GHInternalNode核心代码]
+public class GHInternalNode extends InternalNode {
+    public GHInternalNode(MetricSpaceData pivot1, 
+                          MetricSpaceData pivot2,
+                          TreeNode leftChild, 
+                          TreeNode rightChild, 
+                          int depth) {
+        this.pivots = List.of(pivot1, pivot2);
+        this.children = List.of(leftChild, rightChild);
+        this.depth = depth;
+    }
+    
+    public MetricSpaceData getPivot1() { return pivots.get(0); }
+    public MetricSpaceData getPivot2() { return pivots.get(1); }
+    public TreeNode getLeftChild() { return children.get(0); }
+    public TreeNode getRightChild() { return children.get(1); }
+}
+\end{lstlisting}
+
+\subsubsection{GHT批建算法实现}
+
+GH树批建的核心逻辑实现如下：
+
+\begin{lstlisting}[caption=GH树批建算法核心实现]
+protected TreeNode buildTreeRecursive(
+        List<? extends MetricSpaceData> data, int depth) {
+    // Step 1: Check termination condition
+    if (heightController.canCreateLeaf(depth, data.size())) {
+        return new LeafNode(data, depth);
+    }
+    
+    // Step 2: Select two pivots
+    MetricSpaceData[] pivots = selectTwoPivots(data);
+    MetricSpaceData pivot1 = pivots[0];
+    MetricSpaceData pivot2 = pivots[1];
+    
+    // Step 3: Partition data
+    List<MetricSpaceData> leftData = new ArrayList<>();
+    List<MetricSpaceData> rightData = new ArrayList<>();
+    
+    for (MetricSpaceData obj : data) {
+        double d1 = metric.getDistance(obj, pivot1);
+        double d2 = metric.getDistance(obj, pivot2);
+        buildDistanceComputations += 2;
+        
+        if (d1 < d2) {
+            leftData.add(obj);
+        } else {
+            rightData.add(obj);
+        }
+    }
+    
+    // Step 4: Recursive build
+    TreeNode leftChild = buildTreeRecursive(leftData, depth + 1);
+    TreeNode rightChild = buildTreeRecursive(rightData, depth + 1);
+    
+    return new GHInternalNode(pivot1, pivot2, 
+                              leftChild, rightChild, depth);
+}
+\end{lstlisting}
+
+\subsubsection{GHT范围查询实现}
+
+GH树范围查询实现了超平面剪枝规则：
+
+\begin{lstlisting}[caption=GH树范围查询实现]
+public List<MetricSpaceData> rangeQuery(
+        MetricSpaceData queryObject, double radius) {
+    List<MetricSpaceData> result = new ArrayList<>();
+    resetStatistics();
+    rangeQueryRecursive(root, queryObject, radius, result);
+    return result;
+}
+
+private void rangeQueryRecursive(TreeNode node, 
+        MetricSpaceData q, double r, List<MetricSpaceData> result) {
+    nodeAccesses++;
+    
+    if (node.isLeaf()) {
+        LeafNode leaf = (LeafNode) node;
+        for (MetricSpaceData obj : leaf.getData()) {
+            double dist = metric.getDistance(q, obj);
+            queryDistanceComputations++;
+            if (dist <= r) {
+                result.add(obj);
+            }
+        }
+        return;
+    }
+    
+    GHInternalNode internal = (GHInternalNode) node;
+    double d1 = metric.getDistance(q, internal.getPivot1());
+    double d2 = metric.getDistance(q, internal.getPivot2());
+    queryDistanceComputations += 2;
+    
+    // Pruning rule 1: if d1 - d2 > 2r, prune left
+    if (!(d1 - d2 > 2 * r)) {
+        rangeQueryRecursive(internal.getLeftChild(), q, r, result);
+    }
+    
+    // Pruning rule 2: if d2 - d1 > 2r, prune right
+    if (!(d2 - d1 > 2 * r)) {
+        rangeQueryRecursive(internal.getRightChild(), q, r, result);
+    }
+}
+\end{lstlisting}
+
+\subsubsection{GHT kNN查询实现}
+
+kNN查询使用优先队列维护当前k个最近邻：
+
+\begin{lstlisting}[caption=GH树kNN查询实现]
+public List<MetricSpaceData> knnQuery(
+        MetricSpaceData queryObject, int k) {
+    PriorityQueue<DataWithDistance> knnQueue = 
+        new PriorityQueue<>((a, b) -> 
+            Double.compare(b.distance, a.distance)); // max-heap
+    
+    resetStatistics();
+    knnQueryRecursive(root, queryObject, k, knnQueue);
+    
+    // Convert to result list
+    List<MetricSpaceData> result = new ArrayList<>();
+    while (!knnQueue.isEmpty()) {
+        result.add(0, knnQueue.poll().data);
+    }
+    return result;
+}
+\end{lstlisting}
+
+\subsection{VPT实现}
+
+\subsubsection{VPT节点数据结构实现}
+
+VP树内部节点存储距离范围信息：
+
+\begin{lstlisting}[caption=VPInternalNode核心代码]
+public class VPInternalNode extends InternalNode {
+    private List<DistanceRange> distanceRanges;
+    
+    public static class DistanceRange {
+        public double lower;  // minimum distance
+        public double upper;  // maximum distance
+        
+        public DistanceRange(double lower, double upper) {
+            this.lower = lower;
+            this.upper = upper;
+        }
+    }
+    
+    public VPInternalNode(MetricSpaceData pivot,
+                          List<TreeNode> children,
+                          List<DistanceRange> distanceRanges,
+                          int depth) {
+        this.pivots = Collections.singletonList(pivot);
+        this.children = new ArrayList<>(children);
+        this.distanceRanges = new ArrayList<>(distanceRanges);
+        this.depth = depth;
+    }
+    
+    public MetricSpaceData getPivot() { return pivots.get(0); }
+    public DistanceRange getDistanceRange(int i) { 
+        return distanceRanges.get(i); 
+    }
+}
+\end{lstlisting}
+
+\subsubsection{VPT批建算法实现}
+
+VP树批建基于中位数划分：
+
+\begin{lstlisting}[caption=VP树批建算法核心实现]
+protected TreeNode buildTreeRecursive(
+        List<? extends MetricSpaceData> data, int depth) {
+    if (heightController.canCreateLeaf(depth, data.size())) {
+        return new LeafNode(data, depth);
+    }
+    
+    // Select pivot
+    MetricSpaceData pivot = selectPivot(data);
+    
+    // Compute distances and sort
+    List<DataWithDistance> dataWithDist = new ArrayList<>();
+    for (MetricSpaceData obj : data) {
+        if (obj == pivot) continue;
+        double dist = metric.getDistance(obj, pivot);
+        buildDistanceComputations++;
+        dataWithDist.add(new DataWithDistance(obj, dist));
+    }
+    dataWithDist.sort(Comparator.comparingDouble(d -> d.distance));
+    
+    // Partition by median
+    int midpoint = dataWithDist.size() / 2;
+    List<MetricSpaceData> innerData = new ArrayList<>();
+    List<MetricSpaceData> outerData = new ArrayList<>();
+    
+    for (int i = 0; i < dataWithDist.size(); i++) {
+        if (i < midpoint) {
+            innerData.add(dataWithDist.get(i).data);
+        } else {
+            outerData.add(dataWithDist.get(i).data);
+        }
+    }
+    
+    // Compute distance ranges
+    double innerLower = dataWithDist.get(0).distance;
+    double innerUpper = dataWithDist.get(midpoint - 1).distance;
+    double outerLower = dataWithDist.get(midpoint).distance;
+    double outerUpper = dataWithDist.get(dataWithDist.size()-1).distance;
+    
+    // Recursive build
+    TreeNode innerChild = buildTreeRecursive(innerData, depth + 1);
+    TreeNode outerChild = buildTreeRecursive(outerData, depth + 1);
+    
+    List<DistanceRange> ranges = Arrays.asList(
+        new DistanceRange(innerLower, innerUpper),
+        new DistanceRange(outerLower, outerUpper)
+    );
+    
+    return new VPInternalNode(pivot, 
+        Arrays.asList(innerChild, outerChild), ranges, depth);
+}
+\end{lstlisting}
+
+\subsubsection{VPT范围查询实现}
+
+VP树范围查询利用距离范围剪枝：
+
+\begin{lstlisting}[caption=VP树范围查询实现]
+private void rangeQueryRecursive(TreeNode node, 
+        MetricSpaceData q, double r, List<MetricSpaceData> result) {
+    nodeAccesses++;
+    
+    if (node.isLeaf()) {
+        LeafNode leaf = (LeafNode) node;
+        for (MetricSpaceData obj : leaf.getData()) {
+            double dist = metric.getDistance(q, obj);
+            queryDistanceComputations++;
+            if (dist <= r) {
+                result.add(obj);
+            }
+        }
+        return;
+    }
+    
+    VPInternalNode internal = (VPInternalNode) node;
+    double dq = metric.getDistance(q, internal.getPivot());
+    queryDistanceComputations++;
+    
+    for (int i = 0; i < internal.getChildren().size(); i++) {
+        DistanceRange range = internal.getDistanceRange(i);
+        double L = range.lower;
+        double U = range.upper;
+        
+        // Pruning: if query ball doesn't intersect with range
+        if (!(dq + r < L || dq - r > U)) {
+            rangeQueryRecursive(internal.getChildren().get(i), 
+                               q, r, result);
+        }
+    }
+}
+\end{lstlisting}
+
+\subsubsection{VPT kNN查询实现}
+
+VP树kNN查询与GH树类似，使用动态半径剪枝。
+
+\subsection{Pivot选择与树高控制}
+
+\subsubsection{统一的Pivot选择策略}
+
+为了公平对比，GH树和VP树使用统一的Pivot选择策略。我们实现了三种策略：
+
+\begin{enumerate}
+    \item \textbf{RANDOM}：随机选择，时间复杂度$O(1)$
+    \item \textbf{FFT（Farthest-First Traversal）}：选择距离较远的点，时间复杂度$O(n)$
+    \item \textbf{MAX\_SPREAD}：采样找最大距离对，时间复杂度$O(k^2)$，$k$为采样数
+\end{enumerate}
+
+FFT策略的实现：
+
+\begin{lstlisting}[caption=FFT Pivot选择策略]
+private MetricSpaceData[] selectFFTPivots(
+        List<? extends MetricSpaceData> data) {
+    Random random = new Random(config.getSeed());
+    // First pivot: random
+    MetricSpaceData pivot1 = data.get(random.nextInt(data.size()));
+    
+    // Second pivot: farthest from first
+    MetricSpaceData pivot2 = null;
+    double maxDist = -1;
+    for (MetricSpaceData obj : data) {
+        double dist = metric.getDistance(pivot1, obj);
+        buildDistanceComputations++;
+        if (dist > maxDist) {
+            maxDist = dist;
+            pivot2 = obj;
+        }
+    }
+    return new MetricSpaceData[] {pivot1, pivot2};
+}
+\end{lstlisting}
+
+\subsubsection{树高控制方法}
+
+根据作业要求，树高至少为3层。我们通过TreeHeightController控制：
+
+\begin{lstlisting}[caption=树高控制器实现]
+public class TreeHeightController {
+    private TreeConfig config;
+    
+    public boolean canCreateLeaf(int currentDepth, int dataSize) {
+        // Must create leaf if data too small
+        if (dataSize <= 2) {
+            return true;
+        }
+        
+        // Must continue if not reached minimum height
+        if (currentDepth < config.getMinTreeHeight()) {
+            return false;
+        }
+        
+        // Can create leaf if data size <= maxLeafSize
+        return dataSize <= config.getMaxLeafSize();
+    }
+}
+\end{lstlisting}
+
+树配置使用Builder模式，便于统一设置参数：
+
+\begin{lstlisting}[caption=树配置使用示例]
+TreeConfig config = new TreeConfig.Builder()
+    .maxLeafSize(50)           // max leaf capacity
+    .minTreeHeight(3)          // minimum tree height
+    .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT)
+    .randomSeed(42)            // fixed seed for reproducibility
+    .verbose(false)
+    .build();
+\end{lstlisting}
+

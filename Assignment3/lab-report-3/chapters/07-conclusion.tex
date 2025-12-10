@@ -1,0 +1,108 @@
+% Chapter 7: Conclusion
+\section{总结与展望}
+
+\subsection{工作总结}
+
+本次Assignment 3完成了以下工作：
+
+\subsubsection{代码实现}
+
+\begin{enumerate}
+    \item \textbf{基础设施扩展}：设计并实现了统一的索引接口（\texttt{Index}）和树索引抽象基类（\texttt{TreeIndex}），以及树节点结构（\texttt{TreeNode}、\texttt{InternalNode}、\texttt{LeafNode}）
+    
+    \item \textbf{GH树实现}：实现了GH树的数据结构（\texttt{GHTree}、\texttt{GHInternalNode}）、批建算法、范围查询和kNN查询，包含超平面剪枝规则
+    
+    \item \textbf{VP树实现}：实现了VP树的数据结构（\texttt{VPTree}、\texttt{VPInternalNode}）、批建算法、范围查询和kNN查询，包含基于距离范围的剪枝规则
+    
+    \item \textbf{配置与控制}：实现了\texttt{TreeConfig}配置类和\texttt{TreeHeightController}树高控制器，支持灵活的参数配置
+    
+    \item \textbf{Pivot选择策略}：实现了RANDOM、FFT、MAX\_SPREAD三种策略
+\end{enumerate}
+
+\subsubsection{正确性验证}
+
+\begin{enumerate}
+    \item 使用小规模数据集进行详细的构建和查询过程展示
+    \item 手工验证查询结果的正确性
+    \item 与线性扫描结果对比，确保100\%一致
+    \item 验证GH树和VP树在相同查询条件下返回相同结果
+    \item 编写全面的单元测试，21个测试全部通过
+\end{enumerate}
+
+\subsubsection{性能实验}
+
+\begin{enumerate}
+    \item 设计了科学的实验方案，包括评价指标、数据集选择和参数设置
+    \item 在三类数据集上进行了全面的性能对比：蛋白质序列、低维向量、高维向量
+    \item 分析了叶子节点大小和Pivot选择策略对性能的影响
+\end{enumerate}
+
+\subsubsection{分析与讨论}
+
+\begin{enumerate}
+    \item 深入分析了GH树和VP树在不同数据集上的性能差异
+    \item 讨论了数据划分方式、支撑点使用效率、数据分布特征和维度灾难对性能的影响
+    \item 总结了两种索引的优缺点和适用场景
+    \item 提出了多个改进方向
+\end{enumerate}
+
+\subsection{主要结论}
+
+通过本次实验，我们得出以下主要结论：
+
+\begin{enumerate}
+    \item \textbf{VP树整体表现更优}：在构建效率、树的平衡性和查询剪枝率三个方面，VP树都优于GH树
+    
+    \item \textbf{kNN查询剪枝效果显著}：在低维数据上，两种树的kNN查询都能达到98\%以上的剪枝率
+    
+    \item \textbf{范围查询效果依赖半径}：查询半径相对数据分布越小，剪枝效果越好
+    
+    \item \textbf{维度灾难不可忽视}：在高维（20维）均匀分布数据上，两种树几乎无法实现有效剪枝
+    
+    \item \textbf{Pivot选择策略很重要}：FFT策略在构建开销和查询性能之间取得较好平衡
+    
+    \item \textbf{树高控制有效}：通过\texttt{TreeHeightController}可以确保树至少达到指定高度
+\end{enumerate}
+
+\subsection{未来展望}
+
+基于本次工作，未来可以从以下方向进行深入研究：
+
+\subsubsection{算法优化}
+
+\begin{enumerate}
+    \item 研究更高效的Pivot选择算法，如基于机器学习的自适应选择
+    \item 探索混合划分策略，结合超平面和球形划分的优点
+    \item 实现增量式索引更新，支持动态数据集
+\end{enumerate}
+
+\subsubsection{扩展应用}
+
+\begin{enumerate}
+    \item 将树状索引应用于更多数据类型，如图像特征向量、文本嵌入等
+    \item 探索近似最近邻（ANN）查询，在精度和效率之间取得平衡
+    \item 研究分布式树状索引，支持大规模数据集
+\end{enumerate}
+
+\subsubsection{性能提升}
+
+\begin{enumerate}
+    \item 针对高维数据，研究降维与索引的结合方法
+    \item 探索GPU加速的距离计算和树遍历
+    \item 研究缓存友好的树节点布局
+\end{enumerate}
+
+\subsubsection{理论分析}
+
+\begin{enumerate}
+    \item 深入分析维度灾难的本质及其边界条件
+    \item 研究不同数据分布下的最优索引选择理论
+    \item 建立更精确的查询复杂度分析模型
+\end{enumerate}
+
+\subsection{结语}
+
+本次Assignment 3让我们深入理解了树状度量空间索引的原理和实现。GH树和VP树作为经典的树状索引，各有特点。VP树凭借其平衡性好、构建快、剪枝精确的优势，在多数场景下表现更优。然而，面对高维数据的维度灾难，单纯的树状索引难以奏效，需要结合其他技术进行优化。
+
+度量空间索引是大数据泛构的核心技术之一，通过抽象数据类型和距离函数，实现了对多种数据类型的统一处理。这种通用性与专用性的平衡，是数据管理系统设计的永恒主题。期待在未来的研究中，能够找到更高效、更通用的度量空间索引方法。
+

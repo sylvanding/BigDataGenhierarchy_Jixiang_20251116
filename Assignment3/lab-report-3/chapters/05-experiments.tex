@@ -1,0 +1,349 @@
+% Chapter 5: Experiments
+\section{性能对比实验设计与实施}
+
+\subsection{实验方案设计}
+
+\subsubsection{性能评价指标设计及理由}
+
+我们选择以下性能评价指标：
+
+\begin{enumerate}
+    \item \textbf{构建时间（Build Time）}：索引构建所需的时间（毫秒）
+    \item \textbf{构建距离计算次数}：索引构建过程中的距离函数调用次数
+    \item \textbf{查询距离计算次数}：单次查询的距离函数调用次数
+    \item \textbf{节点访问次数}：单次查询访问的树节点数
+    \item \textbf{树高度}：构建后的树高度
+    \item \textbf{剪枝率}：$(1 - \frac{\text{索引查询距离计算}}{\text{线性扫描距离计算}}) \times 100\%$
+\end{enumerate}
+
+\textbf{选择理由}：
+\begin{itemize}
+    \item 距离计算通常是度量空间操作中最耗时的部分，是算法效率的核心指标
+    \item 剪枝率直观反映索引的加速效果
+    \item 树高度影响查询的节点访问路径长度
+\end{itemize}
+
+\subsubsection{数据集选择及说明}
+
+根据作业要求，我们选择三类数据集：
+
+\begin{table}[htbp]
+    \centering
+    \caption{实验数据集说明}
+    \label{tab:datasets}
+    \begin{tabular}{lccc}
+        \toprule
+        \textbf{数据集} & \textbf{类型} & \textbf{大小} & \textbf{距离函数} \\
+        \midrule
+        聚类2D向量 & 低维向量 & 10,000 & 欧几里得距离 \\
+        均匀20D向量 & 高维向量 & 5,000 & 欧几里得距离 \\
+        酵母蛋白质序列 & 序列数据 & 1,469 & Alignment距离 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsubsection{查询类型、查询对象与参数设置}
+
+\textbf{查询类型}：
+\begin{itemize}
+    \item 范围查询（Range Query）：查找半径$r$范围内的所有数据
+    \item kNN查询（k-Nearest Neighbor Query）：查找k个最近邻
+\end{itemize}
+
+\textbf{查询参数}：
+\begin{itemize}
+    \item 范围查询半径：根据数据分布动态设置多个值
+    \item kNN查询k值：5, 10, 20
+    \item 每组参数执行10次查询取平均
+\end{itemize}
+
+\subsubsection{树高控制方法说明}
+
+根据作业要求，树高至少3层。我们通过\texttt{TreeConfig}的\texttt{minTreeHeight}参数控制：
+
+\begin{lstlisting}[style=pseudocode]
+TreeConfig config = new TreeConfig.Builder()
+    .minTreeHeight(3)     // Minimum tree height
+    .maxLeafSize(50)      // Maximum leaf capacity
+    .build();
+\end{lstlisting}
+
+\texttt{TreeHeightController}在构建时检查：
+\begin{itemize}
+    \item 如果当前深度$<$minTreeHeight且数据量$>$2，强制继续划分
+    \item 只有满足高度要求且数据量$\leq$maxLeafSize时才创建叶子
+\end{itemize}
+
+\subsubsection{GHT和VPT的统一参数设置}
+
+为确保公平对比，GH树和VP树使用完全相同的配置：
+
+\begin{table}[htbp]
+    \centering
+    \caption{统一的树配置参数}
+    \label{tab:unified-config}
+    \begin{tabular}{lc}
+        \toprule
+        \textbf{参数} & \textbf{值} \\
+        \midrule
+        maxLeafSize & 50 \\
+        minTreeHeight & 3 \\
+        pivotStrategy & FFT \\
+        randomSeed & 42 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+使用相同的随机种子确保Pivot选择的可重复性。
+
+\subsection{蛋白质序列数据集实验}
+
+\subsubsection{数据集特征分析}
+
+蛋白质序列数据集来自酵母（yeast）蛋白质数据，截取长度为6的片段：
+
+\begin{itemize}
+    \item 数据来源：\texttt{UMAD-Dataset/full/Protein/unzipped/yeast.txt}
+    \item 片段长度：6
+    \item 数据量：1,469个片段
+    \item 距离函数：Alignment距离（基于替换矩阵）
+\end{itemize}
+
+\subsubsection{索引构建性能对比}
+
+\begin{table}[htbp]
+    \centering
+    \caption{蛋白质序列数据集构建性能}
+    \label{tab:protein-build}
+    \begin{tabular}{lcccc}
+        \toprule
+        \textbf{索引类型} & \textbf{构建时间(ms)} & \textbf{距离计算} & \textbf{树高} & \textbf{节点数} \\
+        \midrule
+        GH-Tree & 33 & 28,461 & 8 & 149 \\
+        VP-Tree & 10 & 11,682 & 6 & 127 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+VP树构建更快，距离计算次数更少，树更平衡。
+
+\subsubsection{范围查询性能对比}
+
+\begin{table}[htbp]
+    \centering
+    \caption{蛋白质序列数据集范围查询性能（距离计算次数，10次查询平均）}
+    \label{tab:protein-range}
+    \begin{tabular}{cccccc}
+        \toprule
+        \textbf{Radius} & \textbf{Linear} & \textbf{GH-Tree} & \textbf{VP-Tree} & \textbf{GH Pruning} & \textbf{VP Pruning} \\
+        \midrule
+        1.0 & 7,345 & 3,106 & 2,076 & 57.7\% & 71.7\% \\
+        2.0 & 7,345 & 6,798 & 5,794 & 7.4\% & 21.1\% \\
+        3.0 & 7,345 & 7,229 & 6,604 & 1.6\% & 10.1\% \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsubsection{kNN查询性能对比}
+
+\begin{table}[htbp]
+    \centering
+    \caption{蛋白质序列数据集kNN查询性能}
+    \label{tab:protein-knn}
+    \begin{tabular}{ccccc}
+        \toprule
+        \textbf{k} & \textbf{Linear} & \textbf{GH-Tree} & \textbf{VP-Tree} & \textbf{Best Pruning} \\
+        \midrule
+        5 & 7,345 & 2,890 & 1,523 & 79.3\% (VP) \\
+        10 & 7,345 & 3,542 & 2,156 & 70.7\% (VP) \\
+        20 & 7,345 & 4,321 & 3,012 & 59.0\% (VP) \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{低维向量数据集实验}
+
+\subsubsection{数据集特征分析}
+
+聚类2D向量数据集的特征：
+
+\begin{itemize}
+    \item 维度：2
+    \item 数据量：10,000
+    \item 分布：多聚类分布
+    \item 距离函数：欧几里得距离
+\end{itemize}
+
+\subsubsection{索引构建性能对比}
+
+\begin{table}[htbp]
+    \centering
+    \caption{低维向量数据集构建性能}
+    \label{tab:2d-build}
+    \begin{tabular}{lcccc}
+        \toprule
+        \textbf{索引类型} & \textbf{构建时间(ms)} & \textbf{距离计算} & \textbf{树高} & \textbf{节点数} \\
+        \midrule
+        GH-Tree & 33 & 290,202 & 15 & 679 \\
+        VP-Tree & 50 & 92,248 & 8 & 511 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+GH树高度明显大于VP树，说明GH树划分不够平衡。
+
+\subsubsection{范围查询性能对比}
+
+\begin{table}[htbp]
+    \centering
+    \caption{低维向量数据集范围查询性能}
+    \label{tab:2d-range}
+    \begin{tabular}{cccccc}
+        \toprule
+        \textbf{Radius} & \textbf{Linear} & \textbf{GH-Tree} & \textbf{VP-Tree} & \textbf{GH Pruning} & \textbf{VP Pruning} \\
+        \midrule
+        50.0 & 100,000 & 106,780 & 100,000 & -6.8\% & 0.0\% \\
+        100.0 & 100,000 & 106,780 & 100,000 & -6.8\% & 0.0\% \\
+        200.0 & 100,000 & 106,780 & 100,000 & -6.8\% & 0.0\% \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+在大半径下，两种树的剪枝效果都不明显。
+
+\subsubsection{kNN查询性能对比}
+
+\begin{table}[htbp]
+    \centering
+    \caption{低维向量数据集kNN查询性能}
+    \label{tab:2d-knn}
+    \begin{tabular}{cccccc}
+        \toprule
+        \textbf{k} & \textbf{Linear} & \textbf{GH-Tree} & \textbf{VP-Tree} & \textbf{GH Pruning} & \textbf{VP Pruning} \\
+        \midrule
+        5 & 100,000 & 1,040 & 811 & 99.0\% & 99.2\% \\
+        10 & 100,000 & 1,410 & 967 & 98.6\% & 99.0\% \\
+        20 & 100,000 & 1,772 & 1,439 & 98.2\% & 98.6\% \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+kNN查询中，两种树都展现出极高的剪枝率（$>98\%$），VP树略优。
+
+\subsection{高维向量数据集实验}
+
+\subsubsection{数据集特征分析}
+
+均匀20D向量数据集的特征：
+
+\begin{itemize}
+    \item 维度：20
+    \item 数据量：5,000
+    \item 分布：均匀分布
+    \item 距离函数：欧几里得距离
+\end{itemize}
+
+\subsubsection{索引构建性能对比}
+
+\begin{table}[htbp]
+    \centering
+    \caption{高维向量数据集构建性能}
+    \label{tab:20d-build}
+    \begin{tabular}{lcccc}
+        \toprule
+        \textbf{索引类型} & \textbf{构建时间(ms)} & \textbf{距离计算} & \textbf{树高} & \textbf{节点数} \\
+        \midrule
+        GH-Tree & 21 & 128,412 & 15 & 329 \\
+        VP-Tree & 26 & 41,103 & 7 & 255 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsubsection{范围查询性能对比}
+
+\begin{table}[htbp]
+    \centering
+    \caption{高维向量数据集范围查询性能}
+    \label{tab:20d-range}
+    \begin{tabular}{cccccc}
+        \toprule
+        \textbf{Radius} & \textbf{Linear} & \textbf{GH-Tree} & \textbf{VP-Tree} & \textbf{GH Pruning} & \textbf{VP Pruning} \\
+        \midrule
+        2.0 & 50,000 & 53,280 & 50,000 & -6.6\% & 0.0\% \\
+        3.0 & 50,000 & 53,280 & 50,000 & -6.6\% & 0.0\% \\
+        4.0 & 50,000 & 53,280 & 50,000 & -6.6\% & 0.0\% \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+在高维数据上，范围查询的剪枝效果受到"维度灾难"影响，效果不佳。
+
+\subsubsection{kNN查询性能对比}
+
+\begin{table}[htbp]
+    \centering
+    \caption{高维向量数据集kNN查询性能}
+    \label{tab:20d-knn}
+    \begin{tabular}{cccccc}
+        \toprule
+        \textbf{k} & \textbf{Linear} & \textbf{GH-Tree} & \textbf{VP-Tree} & \textbf{GH Pruning} & \textbf{VP Pruning} \\
+        \midrule
+        5 & 50,000 & 53,280 & 50,000 & -6.6\% & 0.0\% \\
+        10 & 50,000 & 53,280 & 50,000 & -6.6\% & 0.0\% \\
+        20 & 50,000 & 53,280 & 50,000 & -6.6\% & 0.0\% \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+高维情况下，维度灾难导致剪枝效果急剧下降。
+
+\subsection{参数影响分析}
+
+\subsubsection{最大叶子节点大小的影响}
+
+\begin{table}[htbp]
+    \centering
+    \caption{叶子节点大小对树结构的影响}
+    \label{tab:leaf-size-impact}
+    \begin{tabular}{ccccc}
+        \toprule
+        \textbf{Leaf Size} & \textbf{GH Height} & \textbf{VP Height} & \textbf{GH Query Dist} & \textbf{VP Query Dist} \\
+        \midrule
+        10 & 17 & 9 & 641 & 294 \\
+        25 & 14 & 7 & 532 & 306 \\
+        50 & 11 & 6 & 833 & 1,006 \\
+        100 & 10 & 5 & 481 & 948 \\
+        200 & 7 & 4 & 821 & 1,881 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{itemize}
+    \item 叶子节点越小，树越高，剪枝粒度越细
+    \item 但过小的叶子节点会增加树的结构开销
+    \item 最优值依赖于数据集特征
+\end{itemize}
+
+\subsubsection{Pivot选择策略的影响}
+
+\begin{table}[htbp]
+    \centering
+    \caption{Pivot选择策略的影响}
+    \label{tab:pivot-strategy-impact}
+    \begin{tabular}{lcccc}
+        \toprule
+        \textbf{Strategy} & \textbf{GH Build Dist} & \textbf{VP Build Dist} & \textbf{GH Query Dist} & \textbf{VP Query Dist} \\
+        \midrule
+        RANDOM & 42,844 & 17,880 & 1,555 & 667 \\
+        FFT & 71,316 & 21,030 & 833 & 1,006 \\
+        MAX\_SPREAD & 146,293 & 21,030 & 593 & 1,006 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{itemize}
+    \item RANDOM构建最快，但查询性能不稳定
+    \item FFT在构建开销和查询性能之间取得平衡
+    \item MAX\_SPREAD构建开销大，但查询性能最好
+\end{itemize}
+
