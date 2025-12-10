@@ -1,4 +1,4 @@
-package index;
+package index.pivottable;
 
 /**
  * 支撑点选择方法枚举
@@ -28,4 +28,3 @@ public enum PivotSelectionMethod {
      */
     BORDER
 }
-

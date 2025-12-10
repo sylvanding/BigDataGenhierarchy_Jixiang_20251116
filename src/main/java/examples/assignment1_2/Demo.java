@@ -1,3 +1,5 @@
+package examples.assignment1_2;
+
 import core.MetricSpaceData;
 import datatype.vector.MinkowskiDistance;
 import datatype.vector.VectorData;
@@ -6,7 +8,7 @@ import datatype.protein.ProteinData;
 import io.VectorDataReader;
 import io.ProteinDataReader;
 import query.*;
-import index.*;
+import index.pivottable.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -158,15 +160,14 @@ public class Demo {
             // 范围查询
             System.out.println("3.1 范围查询 (radius=2.0)");
             RangeQuery rangeQuery = new RangeQuery(queryObject, 2.0);
-            List<MetricSpaceData> rangeResults =
-                    LinearScanRangeQuery.execute(vectors, rangeQuery, MinkowskiDistance.L2);
+            List<MetricSpaceData> rangeResults = LinearScanRangeQuery.execute(vectors, rangeQuery,
+                    MinkowskiDistance.L2);
             System.out.println("找到 " + rangeResults.size() + " 个结果\n");
 
             // kNN查询
             System.out.println("3.2 kNN查询 (k=3)");
             KNNQuery knnQuery = new KNNQuery(queryObject, 3);
-            List<KNNResult> knnResults =
-                    LinearScanKNNQuery.execute(vectors, knnQuery, MinkowskiDistance.L2);
+            List<KNNResult> knnResults = LinearScanKNNQuery.execute(vectors, knnQuery, MinkowskiDistance.L2);
             System.out.println("Top-3 最近邻:");
             for (int i = 0; i < knnResults.size(); i++) {
                 System.out.println("  " + (i + 1) + ". distance = "
@@ -196,8 +197,7 @@ public class Demo {
 
             // 构建Pivot Table
             System.out.println("4.1 构建Pivot Table索引...");
-            PivotTable pivotTable =
-                    new PivotTable(vectors, 2, MinkowskiDistance.L2, PivotSelectionMethod.FFT);
+            PivotTable pivotTable = new PivotTable(vectors, 2, MinkowskiDistance.L2, PivotSelectionMethod.FFT);
 
             // 使用索引进行查询
             System.out.println("\n4.2 使用索引进行范围查询...");
@@ -213,4 +213,3 @@ public class Demo {
         }
     }
 }
-

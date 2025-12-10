@@ -1,4 +1,4 @@
-package index;
+package index.pivottable;
 
 import core.MetricFunction;
 import core.MetricSpaceData;
@@ -129,4 +129,3 @@ public class PivotTableKNNQuery {
         return results;
     }
 }
-

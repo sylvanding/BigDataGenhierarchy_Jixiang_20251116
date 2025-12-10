@@ -138,10 +138,9 @@ public class VectorDataReader {
         try {
             int dimension = Integer.parseInt(parts[0]);
             int count = Integer.parseInt(parts[1]);
-            return new int[] {dimension, count};
+            return new int[] { dimension, count };
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("无法解析文件头: " + headerLine, e);
         }
     }
 }
-

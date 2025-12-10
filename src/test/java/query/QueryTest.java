@@ -2,7 +2,7 @@ package query;
 
 import datatype.vector.MinkowskiDistance;
 import datatype.vector.VectorData;
-import index.*;
+import index.pivottable.*;
 import io.VectorDataReader;
 import org.junit.Test;
 

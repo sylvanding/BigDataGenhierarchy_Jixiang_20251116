@@ -1,7 +1,9 @@
+package examples.assignment1_2;
+
 import core.MetricSpaceData;
 import datatype.vector.MinkowskiDistance;
 import datatype.vector.VectorData;
-import index.*;
+import index.pivottable.*;
 import io.VectorDataReader;
 import query.*;
 
@@ -25,10 +27,10 @@ import java.util.Random;
 public class PerformanceAnalysis {
 
     // 实验配置
-    private static final int[] DATASET_SIZES = {1000, 5000, 10000};
-    private static final int[] PIVOT_COUNTS = {5, 10, 15, 20, 25, 30};
-    private static final double[] QUERY_RADII = {0.05, 0.1, 0.15, 0.2};
-    private static final int[] KNN_VALUES = {5, 10, 20, 50};
+    private static final int[] DATASET_SIZES = { 1000, 5000, 10000 };
+    private static final int[] PIVOT_COUNTS = { 5, 10, 15, 20, 25, 30 };
+    private static final double[] QUERY_RADII = { 0.05, 0.1, 0.15, 0.2 };
+    private static final int[] KNN_VALUES = { 5, 10, 20, 50 };
     private static final int NUM_QUERIES = 10; // 每个配置执行的查询次数
 
     public static void main(String[] args) {
@@ -143,8 +145,7 @@ public class PerformanceAnalysis {
                     RangeQuery rangeQuery = new RangeQuery(query, radius);
 
                     long startTime = System.nanoTime();
-                    List<MetricSpaceData> results =
-                            PivotTableRangeQuery.execute(pivotTable, rangeQuery, false);
+                    List<MetricSpaceData> results = PivotTableRangeQuery.execute(pivotTable, rangeQuery, false);
                     long endTime = System.nanoTime();
 
                     totalTime += (endTime - startTime);
@@ -211,8 +212,7 @@ public class PerformanceAnalysis {
                     KNNQuery knnQuery = new KNNQuery(query, k);
 
                     long startTime = System.nanoTime();
-                    List<KNNResult> results =
-                            PivotTableKNNQuery.execute(pivotTable, knnQuery, false);
+                    List<KNNResult> results = PivotTableKNNQuery.execute(pivotTable, knnQuery, false);
                     long endTime = System.nanoTime();
 
                     totalTime += (endTime - startTime);
@@ -257,16 +257,15 @@ public class PerformanceAnalysis {
         System.out.println("-".repeat(105));
 
         int testCount = 0;
-        for (PivotSelectionMethod method : new PivotSelectionMethod[] {PivotSelectionMethod.RANDOM,
-                PivotSelectionMethod.FFT}) {
+        for (PivotSelectionMethod method : new PivotSelectionMethod[] { PivotSelectionMethod.RANDOM,
+                PivotSelectionMethod.FFT }) {
             testCount++;
             System.out.print("正在测试 " + method.name() + "... ");
             System.out.flush();
 
             // 构建Pivot Table并测量构建时间 (静默模式)
             long buildStart = System.nanoTime();
-            PivotTable pivotTable =
-                    new PivotTable(dataset, numPivots, MinkowskiDistance.L2, method, false);
+            PivotTable pivotTable = new PivotTable(dataset, numPivots, MinkowskiDistance.L2, method, false);
             long buildEnd = System.nanoTime();
             double buildTime = (buildEnd - buildStart) / 1_000_000.0;
 
@@ -282,8 +281,7 @@ public class PerformanceAnalysis {
                 RangeQuery rangeQuery = new RangeQuery(query, radius);
 
                 long startTime = System.nanoTime();
-                List<MetricSpaceData> results =
-                        PivotTableRangeQuery.execute(pivotTable, rangeQuery, false);
+                List<MetricSpaceData> results = PivotTableRangeQuery.execute(pivotTable, rangeQuery, false);
                 long endTime = System.nanoTime();
 
                 totalTime += (endTime - startTime);
@@ -307,16 +305,15 @@ public class PerformanceAnalysis {
         System.out.println("-".repeat(105));
 
         testCount = 0;
-        for (PivotSelectionMethod method : new PivotSelectionMethod[] {PivotSelectionMethod.RANDOM,
-                PivotSelectionMethod.FFT}) {
+        for (PivotSelectionMethod method : new PivotSelectionMethod[] { PivotSelectionMethod.RANDOM,
+                PivotSelectionMethod.FFT }) {
             testCount++;
             System.out.print("正在测试 " + method.name() + "... ");
             System.out.flush();
 
             // 构建Pivot Table (静默模式)
             long buildStart = System.nanoTime();
-            PivotTable pivotTable =
-                    new PivotTable(dataset, numPivots, MinkowskiDistance.L2, method, false);
+            PivotTable pivotTable = new PivotTable(dataset, numPivots, MinkowskiDistance.L2, method, false);
             long buildEnd = System.nanoTime();
             double buildTime = (buildEnd - buildStart) / 1_000_000.0;
 
@@ -372,8 +369,7 @@ public class PerformanceAnalysis {
 
         for (int datasetSize : DATASET_SIZES) {
             System.out.println(">> 正在加载 " + datasetSize + " 个数据点...");
-            List<VectorData> dataset =
-                    VectorDataReader.readFromFile(datasetPath, datasetSize, false);
+            List<VectorData> dataset = VectorDataReader.readFromFile(datasetPath, datasetSize, false);
 
             // 构建Pivot Table (静默模式)
             System.out.println(">> 正在构建Pivot Table...");
@@ -408,8 +404,7 @@ public class PerformanceAnalysis {
                     RangeQuery rangeQuery = new RangeQuery(query, radius);
 
                     long startTime = System.nanoTime();
-                    List<MetricSpaceData> results =
-                            PivotTableRangeQuery.execute(pivotTable, rangeQuery, false);
+                    List<MetricSpaceData> results = PivotTableRangeQuery.execute(pivotTable, rangeQuery, false);
                     long endTime = System.nanoTime();
 
                     ptTotalTime += (endTime - startTime);
@@ -450,8 +445,7 @@ public class PerformanceAnalysis {
 
         for (int datasetSize : DATASET_SIZES) {
             System.out.println(">> 正在加载 " + datasetSize + " 个数据点...");
-            List<VectorData> dataset =
-                    VectorDataReader.readFromFile(datasetPath, datasetSize, false);
+            List<VectorData> dataset = VectorDataReader.readFromFile(datasetPath, datasetSize, false);
 
             // 构建Pivot Table (静默模式)
             System.out.println(">> 正在构建Pivot Table...");
@@ -486,8 +480,7 @@ public class PerformanceAnalysis {
                     KNNQuery knnQuery = new KNNQuery(query, k);
 
                     long startTime = System.nanoTime();
-                    List<KNNResult> results =
-                            PivotTableKNNQuery.execute(pivotTable, knnQuery, false);
+                    List<KNNResult> results = PivotTableKNNQuery.execute(pivotTable, knnQuery, false);
                     long endTime = System.nanoTime();
 
                     ptTotalTime += (endTime - startTime);
@@ -551,4 +544,3 @@ public class PerformanceAnalysis {
         return sb.toString();
     }
 }
-

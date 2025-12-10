@@ -53,8 +53,7 @@ public class ProteinDataReader {
                 if (line.startsWith(">")) {
                     // 处理前一个序列
                     if (currentSequence.length() > 0) {
-                        List<ProteinData> fragments =
-                                processSequence(id, currentSequence.toString(), fragmentLength);
+                        List<ProteinData> fragments = processSequence(id, currentSequence.toString(), fragmentLength);
                         proteins.addAll(fragments);
                         id += fragments.size();
                         sequenceCount++;
@@ -82,8 +81,7 @@ public class ProteinDataReader {
 
             // 处理最后一个序列
             if (currentSequence.length() > 0 && (maxCount == 0 || proteins.size() < maxCount)) {
-                List<ProteinData> fragments =
-                        processSequence(id, currentSequence.toString(), fragmentLength);
+                List<ProteinData> fragments = processSequence(id, currentSequence.toString(), fragmentLength);
                 int toAdd = (maxCount > 0) ? Math.min(fragments.size(), maxCount - proteins.size())
                         : fragments.size();
                 proteins.addAll(fragments.subList(0, toAdd));
@@ -146,4 +144,3 @@ public class ProteinDataReader {
         return readFromFile(filePath, maxCount, 0);
     }
 }
-
