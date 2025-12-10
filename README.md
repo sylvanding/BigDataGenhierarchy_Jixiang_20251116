@@ -40,7 +40,7 @@
 
 - **编程语言**: Java 12+
 - **构建工具**: Maven 3.x
-- **测试框架**: JUnit 4.13.2
+- **测试框架**: JUnit 5 for Assignment 3 and later, JUnit 4 for Assignment 1 and 2
 - **开发环境**: VS Code (Recommended)
 
 ## 项目结构

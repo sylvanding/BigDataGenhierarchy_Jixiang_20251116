@@ -156,7 +156,7 @@ Assignment 3的核心任务是实现GH树（Generalized Hyperplane Tree）和VP�
 
 - **编程语言**：Java 12
 - **构建工具**：Maven 3.x
-- **测试框架**：JUnit 4.13.2
+- **测试框架**：JUnit 5
 - **报告工具**：LaTeX (使用XeLaTeX编译)
 - **数据格式**：参考UMAD数据集格式规范
 

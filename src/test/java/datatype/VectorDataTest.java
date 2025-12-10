@@ -24,7 +24,7 @@ public class VectorDataTest {
         System.out.println("=== 测试1：向量构造 ===");
 
         // 从数组构造
-        double[] coords = {1.0, 2.0, 3.0};
+        double[] coords = { 1.0, 2.0, 3.0 };
         VectorData v1 = new VectorData(1, coords);
 
         assertEquals(3, v1.getDimension());
@@ -48,8 +48,8 @@ public class VectorDataTest {
         System.out.println("=== 测试2：L1距离（曼哈顿距离）===");
 
         // 测试用例1: 简单二维向量
-        VectorData v1 = new VectorData(1, new double[] {0, 0});
-        VectorData v2 = new VectorData(2, new double[] {3, 4});
+        VectorData v1 = new VectorData(1, new double[] { 0, 0 });
+        VectorData v2 = new VectorData(2, new double[] { 3, 4 });
         MinkowskiDistance metric = MinkowskiDistance.L1;
 
         double distance = metric.getDistance(v1, v2);
@@ -69,8 +69,8 @@ public class VectorDataTest {
         System.out.println("=== 测试3：L2距离（欧几里得距离）===");
 
         // 经典3-4-5直角三角形
-        VectorData v1 = new VectorData(1, new double[] {0, 0});
-        VectorData v2 = new VectorData(2, new double[] {3, 4});
+        VectorData v1 = new VectorData(1, new double[] { 0, 0 });
+        VectorData v2 = new VectorData(2, new double[] { 3, 4 });
         MinkowskiDistance metric = MinkowskiDistance.L2;
 
         double distance = metric.getDistance(v1, v2);
@@ -89,8 +89,8 @@ public class VectorDataTest {
     public void testLInfDistance() {
         System.out.println("=== 测试4：L∞距离（切比雪夫距离）===");
 
-        VectorData v1 = new VectorData(1, new double[] {1, 2, 3});
-        VectorData v2 = new VectorData(2, new double[] {4, 1, 6});
+        VectorData v1 = new VectorData(1, new double[] { 1, 2, 3 });
+        VectorData v2 = new VectorData(2, new double[] { 4, 1, 6 });
         MinkowskiDistance metric = MinkowskiDistance.LINF;
 
         double distance = metric.getDistance(v1, v2);
@@ -113,9 +113,9 @@ public class VectorDataTest {
     public void testMetricProperties() {
         System.out.println("=== 测试5：度量空间三大性质验证 ===");
 
-        VectorData v1 = new VectorData(1, new double[] {1, 2});
-        VectorData v2 = new VectorData(2, new double[] {3, 4});
-        VectorData v3 = new VectorData(3, new double[] {5, 6});
+        VectorData v1 = new VectorData(1, new double[] { 1, 2 });
+        VectorData v2 = new VectorData(2, new double[] { 3, 4 });
+        VectorData v3 = new VectorData(3, new double[] { 5, 6 });
         MinkowskiDistance metric = MinkowskiDistance.L2;
 
         // 1. 非负性
@@ -179,4 +179,3 @@ public class VectorDataTest {
         }
     }
 }
-
