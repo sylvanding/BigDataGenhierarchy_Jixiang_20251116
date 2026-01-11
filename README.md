@@ -36,6 +36,22 @@
   - 范围查询与kNN查询
 - ✅ 性能对比分析框架
 
+### Assignment 4 - 多Pivot树状索引
+
+- ✅ 3-pivot MVPT（多优势点树）
+  - VP树的多pivot扩展
+  - 球形嵌套划分，8个子区域（2³）
+  - 基于距离范围的剪枝规则
+- ✅ 3-pivot CGHT（完全广义超平面树）
+  - GH树的多pivot扩展
+  - 基于距离差的超平面划分
+  - 4或8个子区域
+- ✅ 3-pivot 完全线性划分树
+  - 在支撑点空间中进行线性划分
+  - 正交划分策略，8个子区域
+- ✅ 统一的多Pivot选择器（Random, FFT, MaxSpread）
+- ✅ 理论与实验对比分析框架
+
 ## 技术栈
 
 - **编程语言**: Java 12+
@@ -54,17 +70,25 @@ BigDataGenhierarchy_Jixiang_20251116/
 │   ├── query/                     # 查询算法
 │   ├── index/                     # 索引结构
 │   │   ├── pivottable/            # Pivot Table索引
-│   │   └── tree/                  # 树状索引（GHTree, VPTree）
+│   │   └── tree/                  # 树状索引
+│   │       ├── ghtree/            # GH树
+│   │       ├── vptree/            # VP树
+│   │       ├── mvptree/           # 3-pivot MVPT
+│   │       ├── cght/              # 3-pivot CGHT
+│   │       ├── linearpartition/   # 完全线性划分树
+│   │       └── common/            # 公共组件
 │   └── examples/                  # 演示和分析程序
 │       ├── assignment1_2/         # Assignment 1-2 演示
-│       └── assignment3/           # Assignment 3 演示
+│       ├── assignment3/           # Assignment 3 演示
+│       └── assignment4/           # Assignment 4 演示
 ├── src/test/java/                 # 测试代码
 ├── UMAD-Dataset/                  # 数据集目录
 ├── QUICKSTART/                    # 快速开始指南（包括终端输出记录）
 │   ├── QUICKSTART-Assignment1-2.md
-│   └── QUICKSTART-Assignment3.md
+│   ├── QUICKSTART-Assignment3.md
+│   └── QUICKSTART-Assignment4.md
 ├── tasks/                         # 任务规划文档
-├── Assignment1/, Assignment2/, Assignment3/  # 实验报告
+├── Assignment1/, Assignment2/, Assignment3/, Assignment4/  # 实验报告
 ├── pom.xml
 └── README.md
 ```
@@ -138,12 +162,25 @@ mvn exec:java -Dexec.mainClass=examples.assignment3.TreeDemo
 mvn exec:java -Dexec.mainClass=examples.assignment3.TreePerformanceAnalysis
 ```
 
+**Assignment 4 演示**:
+
+```bash
+# Windows PowerShell
+mvn exec:java "-Dexec.mainClass=examples.assignment4.MultiPivotTreeDemo"
+mvn exec:java "-Dexec.mainClass=examples.assignment4.MultiPivotPerformanceAnalysis"
+
+# Linux/Mac
+mvn exec:java -Dexec.mainClass=examples.assignment4.MultiPivotTreeDemo
+mvn exec:java -Dexec.mainClass=examples.assignment4.MultiPivotPerformanceAnalysis
+```
+
 ### 5. 查看详细输出
 
 所有演示程序的详细输出和测试结果保存在 `QUICKSTART/` 目录：
 
 - `QUICKSTART-Assignment1-2.md` - Assignment 1-2 的运行结果和说明
 - `QUICKSTART-Assignment3.md` - Assignment 3 的运行结果和说明
+- `QUICKSTART-Assignment4.md` - Assignment 4 的运行结果和说明
 
 ## 使用示例
 
@@ -217,6 +254,41 @@ List<MetricSpaceData> results = vpTree.rangeQuery(queryObject, 0.1);
 List<MetricSpaceData> knnResults = vpTree.knnQuery(queryObject, 10);
 ```
 
+### 示例5：使用3-pivot多路树索引
+
+```java
+import index.tree.mvptree.MVPTree;
+import index.tree.cght.CGHTree;
+import index.tree.linearpartition.LinearPartitionTree;
+import index.tree.common.MultiPivotSelector;
+
+// 创建统一的多Pivot选择器（确保公平对比）
+MultiPivotSelector pivotSelector = new MultiPivotSelector(
+    MultiPivotSelector.SelectionStrategy.FFT, 42L);
+
+// 配置树参数
+TreeConfig config = new TreeConfig.Builder()
+    .maxLeafSize(50)
+    .minTreeHeight(2)
+    .numPivots(3)
+    .build();
+
+// 构建3-pivot MVPT（球形嵌套划分）
+MVPTree mvpTree = new MVPTree(config, pivotSelector);
+mvpTree.buildIndex(vectors, MinkowskiDistance.L2);
+List<MetricSpaceData> mvpResults = mvpTree.rangeQuery(queryObject, 0.1);
+
+// 构建3-pivot CGHT（超平面划分）
+CGHTree cghTree = new CGHTree(config, pivotSelector);
+cghTree.buildIndex(vectors, MinkowskiDistance.L2);
+List<MetricSpaceData> cghResults = cghTree.rangeQuery(queryObject, 0.1);
+
+// 构建完全线性划分树（支撑点空间划分）
+LinearPartitionTree lpTree = new LinearPartitionTree(config, pivotSelector);
+lpTree.buildIndex(vectors, MinkowskiDistance.L2);
+List<MetricSpaceData> lpResults = lpTree.rangeQuery(queryObject, 0.1);
+```
+
 ## 数据集说明
 
 ### 向量数据集
@@ -264,6 +336,27 @@ $$L_p(x, y) = \left(\sum_{i=1}^{n} |x_i - y_i|^p\right)^{1/p}$$
 - **划分规则**: 按到pivot的距离排序，中位数分割
 - **剪枝规则**: 基于距离范围 $[L, U]$ 进行剪枝
 
+### 3-pivot MVPT（多优势点树）
+
+- **划分方式**: 使用3个pivot点进行球形嵌套划分
+- **划分规则**: 每个pivot按中位数距离划分，产生 $2^3 = 8$ 个子区域
+- **子区域编码**: 二进制编码 $(b_0, b_1, b_2)$，$b_i = 1$ 表示在第 $i$ 个pivot的外球
+- **剪枝规则**: 基于距离范围 $[L_i, U_i]$ 和查询球 $(q, r)$ 的相交判断
+
+### 3-pivot CGHT（完全广义超平面树）
+
+- **划分方式**: 使用3个pivot点通过距离差进行超平面划分
+- **划分依据**: $\delta_{12} = d(x, p_1) - d(x, p_2)$，$\delta_{13} = d(x, p_1) - d(x, p_3)$
+- **划分规则**: 基于 $(\delta_{12}, \delta_{13})$ 的符号组合划分为4个或8个子区域
+- **剪枝规则**: 若 $|d(q, p_i) - d(q, p_j)| > 2r + \Delta_{max}$，排除对应子树
+
+### 完全线性划分树
+
+- **划分空间**: 在3维支撑点空间 $(d_1, d_2, d_3)$ 中进行划分
+- **划分规则**: 按各维度的中位数进行正交划分，产生 $2^3 = 8$ 个子区域
+- **查询区域**: 在支撑点空间中，查询范围为边长 $2r$ 的立方体
+- **剪枝规则**: 判断查询立方体与子区域的相交性
+
 ## 性能优化建议
 
 ### 数据集选择
@@ -282,9 +375,18 @@ List<VectorData> vectors = VectorDataReader.readFromFile("path/to/data.txt", 100
 
 ### 树索引优化
 
-- **树高控制**: 通过 `minTreeHeight` 参数确保树高至少为3层
+- **树高控制**: 通过 `minTreeHeight` 参数确保树高至少为2-3层
 - **叶子容量**: 通过 `maxLeafSize` 参数控制叶子节点大小
 - **Pivot策略**: 选择合适的pivot选择策略以提高查询效率
+
+### 多Pivot树索引优化
+
+- **Pivot一致性**: 使用相同的 `MultiPivotSelector` 和随机种子确保公平对比
+- **划分策略选择**:
+  - MVPT适合数据分布较均匀的场景
+  - CGHT适合需要强剪枝能力的场景
+  - 线性划分适合支撑点空间中分布规则的数据
+- **子区域平衡**: 使用中位数划分策略确保子区域大小平衡
 
 ## 测试覆盖
 
@@ -294,6 +396,8 @@ List<VectorData> vectors = VectorDataReader.readFromFile("path/to/data.txt", 100
 - ✅ 范围查询、kNN查询、dkNN查询正确性
 - ✅ Pivot Table索引构建与查询
 - ✅ GH树和VP树构建与查询
+- ✅ 3-pivot MVPT、CGHT、线性划分树构建与查询
+- ✅ 多pivot索引间结果一致性验证
 - ✅ 索引查询与线性扫描结果一致性
 
 ## 常见问题
@@ -324,7 +428,18 @@ mvn test
 - `QUICKSTART/` - 快速开始指南和运行输出
 - `tasks/Assignment1-2/` - Assignment 1-2 任务规划
 - `tasks/Assignment3/` - Assignment 3 任务规划
-- `Assignment1/`, `Assignment2/`, `Assignment3/` - 实验报告
+- `tasks/Assignment4/` - Assignment 4 任务规划
+- `Assignment1/`, `Assignment2/`, `Assignment3/`, `Assignment4/` - 实验报告
+
+## 致谢
+
+感谢毛睿教授的悉心指导，感谢大数据泛构课程提供的理论基础和实践平台。
+
+## 参考文献说明
+
+本实验报告参考了以下主要文献：
+
+- 毛睿. 大数据泛构（课程教材）.
 
 ## 联系方式
 
@@ -333,5 +448,5 @@ mvn test
 
 ---
 
-**最后更新**: 2025年12月10日  
-**版本**: 2.0.0
+**最后更新**: 2026年1月11日  
+**版本**: 3.0.0
