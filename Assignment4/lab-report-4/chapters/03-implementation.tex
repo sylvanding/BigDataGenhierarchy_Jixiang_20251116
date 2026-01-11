@@ -1,0 +1,456 @@
+% Chapter 3: Implementation
+\section{算法实现}
+
+\subsection{系统架构}
+
+\subsubsection{Assignment 4新增模块}
+
+在Assignment 3的基础上，我们扩展系统架构以支持多Pivot树索引。图\ref{fig:architecture-a4}展示了扩展后的系统模块关系。
+
+\begin{figure}[htbp]
+    \centering
+    \begin{tikzpicture}[
+        node distance=1cm,
+        box/.style={rectangle, draw, rounded corners, minimum width=2.2cm, minimum height=0.7cm, text centered, font=\footnotesize},
+        arrow/.style={->, thick}
+    ]
+        % Tree Index base
+        \node[box, fill=orange!20] (treeindex) {TreeIndex};
+        
+        % Assignment 3 trees
+        \node[box, fill=yellow!20, below left=1cm and 0.5cm of treeindex] (ghtree) {GHTree};
+        \node[box, fill=yellow!20, right=0.2cm of ghtree] (vptree) {VPTree};
+        
+        % Assignment 4 trees
+        \node[box, fill=red!20, below right=1cm and -0.5cm of treeindex] (mvptree) {MVPTree};
+        \node[box, fill=red!20, right=0.2cm of mvptree] (cghtree) {CGHTree};
+        \node[box, fill=red!20, right=0.2cm of cghtree] (lptree) {LPTree};
+        
+        % Common components
+        \node[box, fill=green!20, above=1.5cm of treeindex] (config) {TreeConfig};
+        \node[box, fill=green!20, right=0.3cm of config] (selector) {MultiPivotSelector};
+        \node[box, fill=green!20, right=0.3cm of selector] (controller) {HeightController};
+        
+        % Arrows
+        \draw[arrow] (ghtree) -- (treeindex);
+        \draw[arrow] (vptree) -- (treeindex);
+        \draw[arrow] (mvptree) -- (treeindex);
+        \draw[arrow] (cghtree) -- (treeindex);
+        \draw[arrow] (lptree) -- (treeindex);
+        
+        \draw[arrow,dashed] (config) -- (treeindex);
+        \draw[arrow,dashed] (selector) -- (treeindex);
+        \draw[arrow,dashed] (controller) -- (treeindex);
+        
+        % Labels
+        \node[below=0.1cm of ghtree, font=\scriptsize] {Assignment 3};
+        \node[below=0.1cm of cghtree, font=\scriptsize] {Assignment 4 (NEW)};
+    \end{tikzpicture}
+    \caption{Assignment 4系统架构扩展}
+    \label{fig:architecture-a4}
+\end{figure}
+
+表\ref{tab:new-modules}展示了Assignment 4新增的主要模块。
+
+\begin{table}[htbp]
+    \centering
+    \caption{Assignment 4新增模块}
+    \label{tab:new-modules}
+    \begin{tabular}{ll}
+        \toprule
+        \textbf{Module/Class} & \textbf{Description} \\
+        \midrule
+        \texttt{MultiPivotSelector} & Multi-pivot selection with FFT/RANDOM/MAX\_SPREAD \\
+        \texttt{mvptree.MVPTree} & 3-pivot MVP tree implementation \\
+        \texttt{mvptree.MVPInternalNode} & MVP tree internal node \\
+        \texttt{cght.CGHTree} & 3-pivot CGH tree implementation \\
+        \texttt{cght.CGHInternalNode} & CGH tree internal node \\
+        \texttt{linearpartition.LinearPartitionTree} & 3-pivot linear partition tree \\
+        \texttt{linearpartition.LPInternalNode} & Linear partition tree internal node \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{3-pivot MVPT实现}
+
+\subsubsection{数据结构}
+
+MVP树内部节点的核心数据结构如下：
+
+\begin{lstlisting}[caption=MVPInternalNode数据结构]
+public class MVPInternalNode extends InternalNode {
+    private MetricSpaceData[] pivots;      // 3 pivots
+    private TreeNode[] children;            // 8 children
+    private double[] splitRadius;           // 3 split radii (medians)
+    private double[][] lowerBound;          // [8][3] lower bounds
+    private double[][] upperBound;          // [8][3] upper bounds
+    
+    public int getChildIndex(double d1, double d2, double d3) {
+        int idx = 0;
+        if (d1 > splitRadius[0]) idx |= 1;
+        if (d2 > splitRadius[1]) idx |= 2;
+        if (d3 > splitRadius[2]) idx |= 4;
+        return idx;
+    }
+}
+\end{lstlisting}
+
+\subsubsection{批建算法}
+
+MVP树批建算法的核心逻辑如算法\ref{alg:mvp-build}所示。
+
+\begin{algorithm}[htbp]
+    \caption{MVP树批建算法}
+    \label{alg:mvp-build}
+    \begin{algorithmic}[1]
+        \REQUIRE 数据集$S$，当前深度$depth$
+        \ENSURE MVP树节点
+        \IF{$|S| \leq maxLeafSize$ \AND $depth \geq minTreeHeight$}
+            \RETURN LeafNode($S$, $depth$)
+        \ENDIF
+        \STATE $(p_1, p_2, p_3) \leftarrow$ SelectThreePivots($S$)
+        \STATE 计算所有数据到各pivot的距离
+        \STATE $\mu_1, \mu_2, \mu_3 \leftarrow$ 各pivot维度的中位数
+        \STATE 初始化8个子集 $partitions[0..7]$
+        \FOR{each $x$ in $S - \{p_1, p_2, p_3\}$}
+            \STATE $idx \leftarrow$ GetChildIndex($d(x,p_1), d(x,p_2), d(x,p_3)$)
+            \STATE $partitions[idx]$.add($x$)
+        \ENDFOR
+        \STATE 计算每个子集的距离范围 $[L_{i,j}, U_{i,j}]$
+        \FOR{$i = 0$ to $7$}
+            \STATE $children[i] \leftarrow$ BuildMVPTree($partitions[i]$, $depth+1$)
+        \ENDFOR
+        \RETURN MVPInternalNode($pivots$, $children$, $bounds$)
+    \end{algorithmic}
+\end{algorithm}
+
+\subsubsection{范围查询算法}
+
+MVP树范围查询利用距离范围进行剪枝：
+
+\begin{lstlisting}[caption=MVP树范围查询核心实现]
+private void rangeQueryRecursive(TreeNode node, 
+        MetricSpaceData q, double r, List<MetricSpaceData> result) {
+    if (node.isLeaf()) {
+        // Linear scan leaf data
+        for (MetricSpaceData obj : ((LeafNode)node).getData()) {
+            if (metric.getDistance(q, obj) <= r) {
+                result.add(obj);
+            }
+        }
+        return;
+    }
+    
+    MVPInternalNode internal = (MVPInternalNode) node;
+    double[] dq = new double[3];
+    for (int j = 0; j < 3; j++) {
+        dq[j] = metric.getDistance(q, internal.getPivot(j));
+        if (dq[j] <= r) result.add(internal.getPivot(j));
+    }
+    
+    // Check each child
+    for (int i = 0; i < 8; i++) {
+        if (internal.getChild(i) == null) continue;
+        
+        boolean canPrune = false;
+        boolean fullyContained = false;
+        
+        for (int j = 0; j < 3; j++) {
+            double L = internal.getLowerBound(i, j);
+            double U = internal.getUpperBound(i, j);
+            
+            // Exclusion rule
+            if (dq[j] + r < L || dq[j] - r > U) {
+                canPrune = true;
+                break;
+            }
+            // Containment rule
+            if (dq[j] + U <= r) {
+                fullyContained = true;
+                break;
+            }
+        }
+        
+        if (fullyContained) {
+            collectAllData(internal.getChild(i), result);
+        } else if (!canPrune) {
+            rangeQueryRecursive(internal.getChild(i), q, r, result);
+        }
+    }
+}
+\end{lstlisting}
+
+\subsection{3-pivot CGHT实现}
+
+\subsubsection{数据结构}
+
+CGH树内部节点基于距离差进行划分：
+
+\begin{lstlisting}[caption=CGHInternalNode数据结构]
+public class CGHInternalNode extends InternalNode {
+    private MetricSpaceData[] pivots;       // 3 pivots
+    private TreeNode[] children;             // 4 children
+    private double[][] delta12Range;         // [4][2]: min, max of delta12
+    private double[][] delta13Range;         // [4][2]: min, max of delta13
+    
+    public int getChildIndex(double d1, double d2, double d3) {
+        double delta12 = d1 - d2;
+        double delta13 = d1 - d3;
+        int idx = 0;
+        if (delta12 >= 0) idx |= 1;
+        if (delta13 >= 0) idx |= 2;
+        return idx;
+    }
+}
+\end{lstlisting}
+
+\subsubsection{批建算法}
+
+CGH树批建算法如算法\ref{alg:cgh-build}所示。
+
+\begin{algorithm}[htbp]
+    \caption{CGH树批建算法}
+    \label{alg:cgh-build}
+    \begin{algorithmic}[1]
+        \REQUIRE 数据集$S$，当前深度$depth$
+        \ENSURE CGH树节点
+        \IF{$|S| \leq maxLeafSize$ \AND $depth \geq minTreeHeight$}
+            \RETURN LeafNode($S$, $depth$)
+        \ENDIF
+        \STATE $(p_1, p_2, p_3) \leftarrow$ SelectThreePivots($S$)
+        \STATE 初始化4个子集 $partitions[0..3]$
+        \FOR{each $x$ in $S - \{p_1, p_2, p_3\}$}
+            \STATE $d_1, d_2, d_3 \leftarrow d(x, p_1), d(x, p_2), d(x, p_3)$
+            \STATE $\delta_{12} \leftarrow d_1 - d_2$, $\delta_{13} \leftarrow d_1 - d_3$
+            \STATE $idx \leftarrow$ ($\delta_{12} \geq 0$ ? 1 : 0) + ($\delta_{13} \geq 0$ ? 2 : 0)
+            \STATE $partitions[idx]$.add($x$)
+        \ENDFOR
+        \STATE 计算每个子集的$\delta_{12}$和$\delta_{13}$范围
+        \FOR{$i = 0$ to $3$}
+            \STATE $children[i] \leftarrow$ BuildCGHTree($partitions[i]$, $depth+1$)
+        \ENDFOR
+        \RETURN CGHInternalNode($pivots$, $children$, $deltaRanges$)
+    \end{algorithmic}
+\end{algorithm}
+
+\subsubsection{范围查询算法}
+
+CGH树范围查询基于GH树剪枝规则的扩展：
+
+\begin{lstlisting}[caption=CGH树范围查询核心实现]
+private void rangeQueryRecursive(TreeNode node,
+        MetricSpaceData q, double r, List<MetricSpaceData> result) {
+    if (node.isLeaf()) {
+        for (MetricSpaceData obj : ((LeafNode)node).getData()) {
+            if (metric.getDistance(q, obj) <= r) {
+                result.add(obj);
+            }
+        }
+        return;
+    }
+    
+    CGHInternalNode internal = (CGHInternalNode) node;
+    double d1 = metric.getDistance(q, internal.getPivot(0));
+    double d2 = metric.getDistance(q, internal.getPivot(1));
+    double d3 = metric.getDistance(q, internal.getPivot(2));
+    
+    // Check pivots
+    if (d1 <= r) result.add(internal.getPivot(0));
+    if (d2 <= r) result.add(internal.getPivot(1));
+    if (d3 <= r) result.add(internal.getPivot(2));
+    
+    double deltaQ12 = d1 - d2;
+    double deltaQ13 = d1 - d3;
+    
+    // Check each child
+    for (int i = 0; i < 4; i++) {
+        if (internal.getChild(i) == null) continue;
+        
+        double[] range12 = internal.getDelta12Range(i);
+        double[] range13 = internal.getDelta13Range(i);
+        
+        // Extended GH-tree pruning rule
+        boolean canPrune = false;
+        
+        // Check delta12 range
+        if (deltaQ12 - 2*r > range12[1] || deltaQ12 + 2*r < range12[0]) {
+            canPrune = true;
+        }
+        // Check delta13 range
+        if (deltaQ13 - 2*r > range13[1] || deltaQ13 + 2*r < range13[0]) {
+            canPrune = true;
+        }
+        
+        if (!canPrune) {
+            rangeQueryRecursive(internal.getChild(i), q, r, result);
+        }
+    }
+}
+\end{lstlisting}
+
+\subsection{完全线性划分树实现}
+
+\subsubsection{数据结构}
+
+线性划分树在支撑点空间中使用正交划分：
+
+\begin{lstlisting}[caption=LinearPartitionInternalNode数据结构]
+public class LinearPartitionInternalNode extends InternalNode {
+    private MetricSpaceData[] pivots;       // 3 pivots
+    private TreeNode[] children;             // 8 children
+    private double[] splitThreshold;         // 3 thresholds (medians)
+    private double[][] lowerBound;           // [8][3] coordinate lower bounds
+    private double[][] upperBound;           // [8][3] coordinate upper bounds
+    
+    public int getChildIndex(double d1, double d2, double d3) {
+        int idx = 0;
+        if (d1 > splitThreshold[0]) idx |= 1;
+        if (d2 > splitThreshold[1]) idx |= 2;
+        if (d3 > splitThreshold[2]) idx |= 4;
+        return idx;
+    }
+}
+\end{lstlisting}
+
+\subsubsection{批建算法}
+
+线性划分树批建算法与MVP树类似，但在支撑点空间中进行划分。
+
+\subsubsection{范围查询算法}
+
+线性划分树范围查询在支撑点空间中判断立方体相交：
+
+\begin{lstlisting}[caption=线性划分树范围查询核心实现]
+private void rangeQueryRecursive(TreeNode node,
+        MetricSpaceData q, double r, List<MetricSpaceData> result) {
+    if (node.isLeaf()) {
+        for (MetricSpaceData obj : ((LeafNode)node).getData()) {
+            if (metric.getDistance(q, obj) <= r) {
+                result.add(obj);
+            }
+        }
+        return;
+    }
+    
+    LPInternalNode internal = (LPInternalNode) node;
+    double[] dq = new double[3];
+    for (int j = 0; j < 3; j++) {
+        dq[j] = metric.getDistance(q, internal.getPivot(j));
+        if (dq[j] <= r) result.add(internal.getPivot(j));
+    }
+    
+    // Query region is a cube: [dq[j]-r, dq[j]+r] for each j
+    for (int i = 0; i < 8; i++) {
+        if (internal.getChild(i) == null) continue;
+        
+        boolean canPrune = false;
+        for (int j = 0; j < 3; j++) {
+            double L = internal.getLowerBound(i, j);
+            double U = internal.getUpperBound(i, j);
+            
+            // Check if query cube intersects with child region
+            if (dq[j] + r < L || dq[j] - r > U) {
+                canPrune = true;
+                break;
+            }
+        }
+        
+        if (!canPrune) {
+            rangeQueryRecursive(internal.getChild(i), q, r, result);
+        }
+    }
+}
+\end{lstlisting}
+
+\subsection{统一的支撑点选择策略}
+
+为了公平对比，三种索引使用统一的\texttt{MultiPivotSelector}选择支撑点：
+
+\begin{lstlisting}[caption=MultiPivotSelector实现]
+public class MultiPivotSelector {
+    public enum SelectionStrategy { RANDOM, FFT, MAX_SPREAD }
+    
+    public MetricSpaceData[] selectPivots(
+            List<? extends MetricSpaceData> data, 
+            int numPivots,
+            MetricFunction metric) {
+        switch (strategy) {
+            case RANDOM:
+                return selectRandomPivots(data, numPivots);
+            case FFT:
+                return selectFFTPivots(data, numPivots, metric);
+            case MAX_SPREAD:
+                return selectMaxSpreadPivots(data, numPivots, metric);
+            default:
+                return selectFFTPivots(data, numPivots, metric);
+        }
+    }
+    
+    private MetricSpaceData[] selectFFTPivots(
+            List<? extends MetricSpaceData> data, 
+            int numPivots,
+            MetricFunction metric) {
+        MetricSpaceData[] pivots = new MetricSpaceData[numPivots];
+        
+        // First pivot: random
+        pivots[0] = data.get(random.nextInt(data.size()));
+        
+        // Subsequent pivots: farthest from selected
+        for (int i = 1; i < numPivots; i++) {
+            double maxMinDist = -1;
+            MetricSpaceData farthest = null;
+            
+            for (MetricSpaceData obj : data) {
+                double minDist = Double.MAX_VALUE;
+                for (int j = 0; j < i; j++) {
+                    double d = metric.getDistance(obj, pivots[j]);
+                    minDist = Math.min(minDist, d);
+                }
+                if (minDist > maxMinDist) {
+                    maxMinDist = minDist;
+                    farthest = obj;
+                }
+            }
+            pivots[i] = farthest;
+        }
+        return pivots;
+    }
+}
+\end{lstlisting}
+
+\subsection{树配置与使用示例}
+
+三种索引使用统一的配置方式：
+
+\begin{lstlisting}[caption=多Pivot树索引使用示例]
+// Configuration
+TreeConfig config = new TreeConfig.Builder()
+    .maxLeafSize(50)
+    .minTreeHeight(2)
+    .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT)
+    .randomSeed(42)
+    .verbose(false)
+    .build();
+
+// Create multi-pivot selector
+MultiPivotSelector selector = new MultiPivotSelector(
+    MultiPivotSelector.SelectionStrategy.FFT, 42);
+
+// Build MVP Tree
+MVPTree mvpTree = new MVPTree(config, selector);
+mvpTree.buildIndex(dataset, new MinkowskiDistance(2));
+
+// Build CGH Tree
+CGHTree cghTree = new CGHTree(config, selector);
+cghTree.buildIndex(dataset, new MinkowskiDistance(2));
+
+// Build Linear Partition Tree
+LinearPartitionTree lpTree = new LinearPartitionTree(config, selector);
+lpTree.buildIndex(dataset, new MinkowskiDistance(2));
+
+// Range Query
+List<MetricSpaceData> results = mvpTree.rangeQuery(queryObj, radius);
+
+// kNN Query
+List<MetricSpaceData> knnResults = cghTree.knnQuery(queryObj, k);
+\end{lstlisting}

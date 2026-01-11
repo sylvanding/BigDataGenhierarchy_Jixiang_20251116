@@ -1,0 +1,126 @@
+% Chapter 7: Conclusion
+\section{总结与展望}
+
+\subsection{工作总结}
+
+本次Assignment 4成功完成了以下工作：
+
+\subsubsection{代码实现}
+
+我们实现了三种使用3个pivot的多Pivot树状索引：
+
+\begin{enumerate}
+    \item \textbf{3-pivot MVP树}：基于嵌套球形划分，产生8个子区域，具有包含规则
+    \item \textbf{3-pivot CGH树}：基于距离差的超平面划分，产生4个子区域
+    \item \textbf{3-pivot 完全线性划分树}：在支撑点空间中正交划分，产生8个子区域
+\end{enumerate}
+
+三种索引都实现了：
+\begin{itemize}
+    \item 统一的\texttt{Index}接口
+    \item 批建算法（\texttt{buildIndex}）
+    \item 范围查询（\texttt{rangeQuery}）
+    \item kNN查询（\texttt{knnQuery}）
+    \item 统计信息收集
+\end{itemize}
+
+\subsubsection{正确性验证}
+
+通过以下方式验证了实现的正确性：
+\begin{itemize}
+    \item 与线性扫描结果对比
+    \item 三种索引结果相互对比
+    \item 12个单元测试用例全部通过
+    \item 在多种数据集上进行验证
+\end{itemize}
+
+\subsubsection{理论分析}
+
+从理论角度分析了三种索引的：
+\begin{itemize}
+    \item 数据划分方式：球形划分 vs 超平面划分 vs 线性划分
+    \item 支撑点信息利用：距离值 vs 距离差 vs 距离向量
+    \item 剪枝能力：排除规则和包含规则
+    \item 时空复杂度：$O(nk\log n)$构建，$O(k\log n + m)$查询
+\end{itemize}
+
+\subsubsection{实验分析}
+
+在多种数据集上进行了全面的性能对比：
+\begin{itemize}
+    \item 低维向量数据集（2维，1000个点）
+    \item 高维向量数据集（10维，500个点）
+    \item 蛋白质序列数据集（960条序列）
+\end{itemize}
+
+主要发现：
+\begin{enumerate}
+    \item MVP树和LP树性能接近，在大多数场景下表现优异
+    \item CGH树在小查询半径时效果较好，但大半径时剪枝效果急剧下降
+    \item 高维数据受维度灾难影响，所有索引的剪枝效果都下降
+    \item FFT是较好的pivot选择策略，在效果和效率之间取得平衡
+\end{enumerate}
+
+\subsection{主要结论}
+
+\begin{enumerate}
+    \item \textbf{多Pivot索引的价值}：使用3个pivot可以获得更多的距离信息，实现更有效的剪枝
+    
+    \item \textbf{划分策略的影响}：不同的划分策略对索引性能有显著影响
+    \begin{itemize}
+        \item 中位数划分（MVP/LP）保证平衡性
+        \item 符号划分（CGH）可能导致不平衡
+    \end{itemize}
+    
+    \item \textbf{包含规则的重要性}：具有包含规则的索引（MVP/LP）在范围查询和kNN查询中表现更好
+    
+    \item \textbf{维度灾难}：高维数据对所有索引都是挑战，需要更多的pivot或其他技术
+    
+    \item \textbf{查询半径敏感性}：CGH树对查询半径非常敏感，大半径时几乎无法剪枝
+\end{enumerate}
+
+\subsection{不足与改进方向}
+
+\subsubsection{当前实现的不足}
+
+\begin{enumerate}
+    \item 只实现了3-pivot版本，没有支持任意数量的pivot
+    \item CGH树只实现了4路划分，没有实现8路划分变体
+    \item 没有实现动态插入和删除操作
+    \item 没有进行磁盘版本的实现和I/O优化
+\end{enumerate}
+
+\subsubsection{可能的改进方向}
+
+\begin{enumerate}
+    \item \textbf{增加pivot数量}：研究4-pivot或更多pivot的索引效果
+    \item \textbf{自适应划分}：根据数据分布自动选择划分策略
+    \item \textbf{混合索引}：结合不同划分策略的优点
+    \item \textbf{并行化}：利用多核CPU加速构建和查询
+    \item \textbf{近似查询}：牺牲部分精度换取更高的查询效率
+\end{enumerate}
+
+\subsection{展望}
+
+多Pivot树状索引是度量空间索引的重要研究方向。未来的工作可以从以下几个方面深入：
+
+\begin{enumerate}
+    \item \textbf{理论研究}：分析最优pivot数量与数据本征维度的关系
+    \item \textbf{实践应用}：将索引应用于实际的相似性搜索场景
+    \item \textbf{系统优化}：开发高效的磁盘版本索引系统
+    \item \textbf{机器学习结合}：利用机器学习方法优化pivot选择和查询路由
+\end{enumerate}
+
+\subsection{致谢}
+
+感谢毛睿教授的悉心指导，感谢大数据泛构课程提供的理论基础和实践平台。
+
+\subsection{参考文献说明}
+
+本实验报告参考了以下主要文献：
+\begin{enumerate}
+    \item Bozkaya T, Ozsoyoglu M. Indexing large metric spaces for similarity search queries. ACM TODS, 1999.
+    \item Mao R, et al. On data partitioning in tree structure metric-space indexes. DASFAA, 2014.
+    \item Chávez E, et al. Searching in metric spaces. ACM Computing Surveys, 2001.
+    \item 毛睿. 大数据泛构（课程教材）.
+\end{enumerate}

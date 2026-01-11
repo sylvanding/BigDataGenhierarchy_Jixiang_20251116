@@ -1,0 +1,88 @@
+% Chapter 1: Introduction
+\section{引言}
+
+\subsection{研究背景与意义}
+
+度量空间（Metric Space）是一种通用的数据抽象方式，可以涵盖向量、字符串、图像、生物序列等多种数据类型。在度量空间中，数据对象之间的相似性通过满足正定性、对称性和三角不等式的距离函数来度量。相似性查询是度量空间数据管理中最基本的操作之一，包括范围查询（Range Query）和k近邻查询（kNN Query）。
+
+在Assignment 3中，我们实现了两种基础的树状索引——GH树和VP树，它们分别使用2个和1个支撑点（Pivot）进行数据划分。然而，这些基础索引在面对大规模或高维数据时，剪枝效果可能不足。\textbf{多Pivot索引}的核心思想是：
+
+\begin{quote}
+    使用更多的pivot可以获得更多的距离信息，从而实现更精细的数据划分和更有效的查询剪枝。
+\end{quote}
+
+本次实验深入研究三种使用3个pivot的多Pivot树状索引结构，探索不同的划分策略对索引性能的影响。
+
+\subsection{任务回顾与目标}
+
+\subsubsection{前序工作简述}
+
+在Assignment 1和2中，我们建立了度量空间数据管理的基础设施：
+\begin{itemize}
+    \item 核心抽象类：\texttt{MetricSpaceData}和\texttt{MetricFunction}
+    \item 具体数据类型：向量数据（\texttt{VectorData}）和蛋白质序列（\texttt{ProteinData}）
+    \item Pivot Table索引：利用支撑点预计算距离实现查询剪枝
+\end{itemize}
+
+在Assignment 3中，我们实现了两种树状索引：
+\begin{itemize}
+    \item \textbf{GH树}：使用2个pivot进行超平面划分
+    \item \textbf{VP树}：使用1个pivot进行球形划分
+\end{itemize}
+
+\subsubsection{本次任务目标}
+
+本次Assignment 4的核心目标是实现和对比分析\textbf{三种使用3个pivot的度量空间树状索引结构}：
+
+\begin{enumerate}
+    \item \textbf{3-pivot MVPT（多优势点树）}：VP树的扩展，使用3个支撑点进行嵌套球形划分，产生$2^3=8$个子区域
+    \item \textbf{3-pivot CGHT（完全广义超平面树）}：GH树的扩展，根据距离差进行多路划分，充分利用pivot对之间的距离差信息
+    \item \textbf{3-pivot 完全线性划分树}：在支撑点空间中使用线性边界进行数据划分
+\end{enumerate}
+
+具体任务包括：
+\begin{enumerate}
+    \item \textbf{代码实现}：实现三种多Pivot树索引的数据结构、批建算法和范围查询
+    \item \textbf{正确性验证}：通过与线性扫描对比验证实现的正确性
+    \item \textbf{理论分析}：从理论角度对比分析三种索引的区别、联系和优缺点
+    \item \textbf{实验分析}：在多种数据集上进行性能对比实验
+\end{enumerate}
+
+\subsection{实验环境}
+
+本实验的软硬件环境如表\ref{tab:environment}所示。
+
+\begin{table}[htbp]
+    \centering
+    \caption{实验环境配置}
+    \label{tab:environment}
+    \begin{tabular}{ll}
+        \toprule
+        \textbf{项目} & \textbf{配置} \\
+        \midrule
+        操作系统 & Windows 11 \\
+        CPU & Intel Core \\
+        内存 & 16GB \\
+        编程语言 & Java 11 \\
+        构建工具 & Maven 3.8+ \\
+        IDE & VS Code / Cursor \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{报告结构}
+
+本报告的组织结构如下：
+
+\begin{itemize}
+    \item \textbf{第2章 理论基础}：介绍度量空间与支撑点空间、MVP树、完全广义超平面树和完全线性划分的原理
+    \item \textbf{第3章 算法实现}：详细描述系统架构和三种索引的核心算法实现
+    \item \textbf{第4章 正确性验证}：通过测试数据集和与线性扫描对比验证实现的正确性
+    \item \textbf{第5章 理论对比分析}：从理论角度对比分析三种索引的划分方式、剪枝能力和复杂度
+    \item \textbf{第6章 实验对比分析}：在多种数据集上进行性能对比实验并分析结果
+    \item \textbf{第7章 总结与展望}：总结本次工作，展望未来研究方向
+\end{itemize}
+
+本项目的完整代码已上传至GitHub仓库：
+
+\url{https://github.com/sylvanding/BigDataGenhierarchy_Jixiang_20251116}

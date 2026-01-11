@@ -1,0 +1,231 @@
+% Chapter 4: Correctness Verification
+\section{正确性验证}
+
+\subsection{测试数据集}
+
+为了验证三种多Pivot树索引的正确性，我们使用以下测试数据集：
+
+\subsubsection{小规模2D向量数据集}
+
+用于手工验证的小规模数据集，包含15个2维点：
+
+\begin{table}[htbp]
+    \centering
+    \caption{小规模测试数据集}
+    \label{tab:test-dataset}
+    \begin{tabular}{ccc|ccc}
+        \toprule
+        \textbf{ID} & \textbf{x} & \textbf{y} & \textbf{ID} & \textbf{x} & \textbf{y} \\
+        \midrule
+        0 & 1.0 & 1.0 & 8 & 9.0 & 4.0 \\
+        1 & 2.0 & 2.0 & 9 & 10.0 & 7.0 \\
+        2 & 3.0 & 1.0 & 10 & 3.0 & 5.0 \\
+        3 & 4.0 & 4.0 & 11 & 6.0 & 1.0 \\
+        4 & 5.0 & 2.0 & 12 & 2.0 & 7.0 \\
+        5 & 6.0 & 5.0 & 13 & 8.0 & 2.0 \\
+        6 & 7.0 & 3.0 & 14 & 4.0 & 8.0 \\
+        7 & 8.0 & 6.0 & & & \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsubsection{较大规模测试数据集}
+
+用于综合测试的数据集：
+\begin{itemize}
+    \item 低维向量数据（2维）：200个聚类分布点
+    \item 高维向量数据（10维）：500个均匀分布点
+    \item 蛋白质序列数据：960条酵母蛋白质序列（长度6）
+\end{itemize}
+
+\subsection{各索引正确性验证}
+
+\subsubsection{MVP树构建与查询验证}
+
+使用小规模数据集验证MVP树的构建和查询正确性。
+
+\textbf{构建结果}：
+\begin{verbatim}
+=== MVP Tree Build Result ===
+Tree Height: 2
+Total Nodes: 7
+  - Internal Nodes: 3
+  - Leaf Nodes: 4
+Build Distance Computations: 84
+
+Tree Structure:
+└── MVP Internal [pivots=ID5,ID0,ID9, sizes=[2,0,5,0,1,4,0,0]]
+    ├── Leaf [size=2]
+    ├── MVP Internal [pivots=ID13,ID14,ID7, sizes=[2,0,0,0,0,0,0,0]]
+    │   └── Leaf [size=2]
+    ├── Leaf [size=1]
+    └── MVP Internal [pivots=ID11,ID12,ID1, sizes=[1,0,0,0,0,0,0,0]]
+        └── Leaf [size=1]
+\end{verbatim}
+
+\textbf{范围查询验证}（查询点(5.0, 5.0)，半径3.0）：
+
+\begin{table}[htbp]
+    \centering
+    \caption{MVP树范围查询结果}
+    \label{tab:mvp-range-result}
+    \begin{tabular}{cccc}
+        \toprule
+        \textbf{ID} & \textbf{Coordinate} & \textbf{Distance} & \textbf{Result} \\
+        \midrule
+        5 & (6.0, 5.0) & 1.0000 & \cmark \\
+        3 & (4.0, 4.0) & 1.4142 & \cmark \\
+        10 & (3.0, 5.0) & 2.0000 & \cmark \\
+        6 & (7.0, 3.0) & 2.8284 & \cmark \\
+        4 & (5.0, 2.0) & 3.0000 & \cmark \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsubsection{CGH树构建与查询验证}
+
+\textbf{构建结果}：
+\begin{verbatim}
+=== CGH Tree Build Result ===
+Tree Height: 2
+Total Nodes: 7
+  - Internal Nodes: 2
+  - Leaf Nodes: 5
+Build Distance Computations: 91
+
+Tree Structure:
+└── CGH Internal [pivots=ID5,ID0,ID9, sizes=[8,2,2,0]]
+    ├── CGH Internal [pivots=ID3,ID13,ID14, sizes=[2,2,1,0]]
+    │   ├── Leaf [size=2]
+    │   ├── Leaf [size=2]
+    │   └── Leaf [size=1]
+    ├── Leaf [size=2]
+    └── Leaf [size=2]
+\end{verbatim}
+
+\textbf{范围查询验证}：结果与MVP树一致，查询距离计算次数为13次。
+
+\subsubsection{线性划分树构建与查询验证}
+
+\textbf{构建结果}：
+\begin{verbatim}
+=== Linear Partition Tree Build Result ===
+Tree Height: 2
+Total Nodes: 7
+  - Internal Nodes: 3
+  - Leaf Nodes: 4
+Build Distance Computations: 84
+
+Tree Structure:
+└── LP Internal [pivots=ID5,ID0,ID9, sizes=[2,0,5,0,1,4,0,0]]
+    ├── Leaf [size=2]
+    ├── LP Internal [pivots=ID13,ID14,ID7, sizes=[2,0,0,0,0,0,0,0]]
+    │   └── Leaf [size=2]
+    ├── Leaf [size=1]
+    └── LP Internal [pivots=ID11,ID12,ID1, sizes=[1,0,0,0,0,0,0,0]]
+        └── Leaf [size=1]
+\end{verbatim}
+
+\textbf{范围查询验证}：结果与前两种索引一致，查询距离计算次数为15次。
+
+\subsection{结果一致性验证}
+
+\subsubsection{与线性扫描对比}
+
+使用线性扫描作为基准，验证三种索引的查询结果一致性：
+
+\begin{table}[htbp]
+    \centering
+    \caption{范围查询结果一致性验证}
+    \label{tab:consistency-range}
+    \begin{tabular}{lccc}
+        \toprule
+        \textbf{Method} & \textbf{Result Count} & \textbf{Distance Computations} & \textbf{Consistent} \\
+        \midrule
+        Linear Scan & 5 & 15 & - \\
+        MVP Tree & 5 & 15 & \cmark \\
+        CGH Tree & 5 & 13 & \cmark \\
+        LP Tree & 5 & 15 & \cmark \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsubsection{kNN查询一致性验证}
+
+对kNN查询（k=3）进行验证：
+
+\begin{table}[htbp]
+    \centering
+    \caption{kNN查询结果一致性验证}
+    \label{tab:consistency-knn}
+    \begin{tabular}{lcccc}
+        \toprule
+        \textbf{Method} & \textbf{1st} & \textbf{2nd} & \textbf{3rd} & \textbf{Consistent} \\
+        \midrule
+        Linear Scan & ID5 (1.00) & ID3 (1.41) & ID10 (2.00) & - \\
+        MVP Tree & ID5 (1.00) & ID3 (1.41) & ID10 (2.00) & \cmark \\
+        CGH Tree & ID5 (1.00) & ID3 (1.41) & ID10 (2.00) & \cmark \\
+        LP Tree & ID5 (1.00) & ID3 (1.41) & ID10 (2.00) & \cmark \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsubsection{大规模数据集验证}
+
+在200个数据点的测试集上进行10轮随机查询验证：
+
+\begin{table}[htbp]
+    \centering
+    \caption{大规模数据集验证结果}
+    \label{tab:large-scale-verify}
+    \begin{tabular}{lccc}
+        \toprule
+        \textbf{Index} & \textbf{Height} & \textbf{Nodes} & \textbf{Correctness} \\
+        \midrule
+        MVP Tree & 2 & 56 & 10/10 (100\%) \\
+        CGH Tree & 5 & 55 & 10/10 (100\%) \\
+        LP Tree & 2 & 56 & 10/10 (100\%) \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{单元测试结果}
+
+运行\texttt{mvn test -Dtest=MultiPivotTreeTest}，所有12个测试用例全部通过：
+
+\begin{table}[htbp]
+    \centering
+    \caption{单元测试结果汇总}
+    \label{tab:unit-test}
+    \begin{tabular}{clc}
+        \toprule
+        \textbf{No.} & \textbf{Test Case} & \textbf{Status} \\
+        \midrule
+        1 & MVP Tree Build & \cmark \\
+        2 & MVP Tree Range Query & \cmark \\
+        3 & MVP Tree kNN Query & \cmark \\
+        4 & CGH Tree Build & \cmark \\
+        5 & CGH Tree Range Query & \cmark \\
+        6 & CGH Tree kNN Query & \cmark \\
+        7 & LP Tree Build & \cmark \\
+        8 & LP Tree Range Query & \cmark \\
+        9 & LP Tree kNN Query & \cmark \\
+        10 & Three Index Consistency & \cmark \\
+        11 & Large Dataset Test & \cmark \\
+        12 & Empty Dataset Handling & \cmark \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+测试运行时间：0.115秒，所有测试通过（Tests run: 12, Failures: 0, Errors: 0）。
+
+\subsection{验证结论}
+
+通过以上验证，我们确认：
+\begin{enumerate}
+    \item 三种多Pivot树索引均能正确构建，树结构符合预期
+    \item 范围查询结果与线性扫描完全一致
+    \item kNN查询结果与线性扫描完全一致
+    \item 三种索引之间的结果相互一致
+    \item 边界情况（空数据集）处理正确
+\end{enumerate}
