@@ -84,12 +84,12 @@ public class TreePerformanceAnalysis {
             // 生成随机2D数据
             List<VectorData> dataset = generateRandomVectors(10000, 2);
             runExperimentOnDataset("随机2D向量", dataset, MinkowskiDistance.L2,
-                    new double[] { 0.5, 1.0, 2.0 }, new int[] { 5, 10, 20 });
+                    new double[] {0.5, 1.0, 2.0}, new int[] {5, 10, 20});
         } else {
             try {
                 List<VectorData> dataset = VectorDataReader.readFromFile(filePath, 10000, false);
                 runExperimentOnDataset("聚类2D向量", dataset, MinkowskiDistance.L2,
-                        new double[] { 50.0, 100.0, 200.0 }, new int[] { 5, 10, 20 });
+                        new double[] {50.0, 100.0, 200.0}, new int[] {5, 10, 20});
             } catch (Exception e) {
                 System.err.println("读取数据失败: " + e.getMessage());
             }
@@ -114,12 +114,12 @@ public class TreePerformanceAnalysis {
 
             List<VectorData> dataset = generateRandomVectors(5000, 20);
             runExperimentOnDataset("随机20D向量", dataset, MinkowskiDistance.L2,
-                    new double[] { 2.0, 3.0, 4.0 }, new int[] { 5, 10, 20 });
+                    new double[] {2.0, 3.0, 4.0}, new int[] {5, 10, 20});
         } else {
             try {
                 List<VectorData> dataset = VectorDataReader.readFromFile(filePath, 5000, false);
                 runExperimentOnDataset("均匀20D向量", dataset, MinkowskiDistance.L2,
-                        new double[] { 2.0, 3.0, 4.0 }, new int[] { 5, 10, 20 });
+                        new double[] {2.0, 3.0, 4.0}, new int[] {5, 10, 20});
             } catch (Exception e) {
                 System.err.println("读取数据失败: " + e.getMessage());
             }
@@ -143,14 +143,14 @@ public class TreePerformanceAnalysis {
             System.out.println("使用随机生成的蛋白质序列进行实验...");
 
             List<ProteinData> dataset = generateRandomProteins(1000, 6);
-            runProteinExperimentOnDataset("随机蛋白质序列", dataset,
-                    new double[] { 1.0, 2.0, 3.0 }, new int[] { 5, 10, 20 });
+            runProteinExperimentOnDataset("随机蛋白质序列", dataset, new double[] {1.0, 2.0, 3.0},
+                    new int[] {5, 10, 20});
         } else {
             try {
                 List<ProteinData> dataset = ProteinDataReader.readFromFile(filePath, 1000, 6);
                 if (dataset.size() > 0) {
-                    runProteinExperimentOnDataset("酵母蛋白质序列", dataset,
-                            new double[] { 1.0, 2.0, 3.0 }, new int[] { 5, 10, 20 });
+                    runProteinExperimentOnDataset("酵母蛋白质序列", dataset, new double[] {1.0, 2.0, 3.0},
+                            new int[] {5, 10, 20});
                 } else {
                     System.out.println("蛋白质数据集为空，跳过实验");
                 }
@@ -177,21 +177,17 @@ public class TreePerformanceAnalysis {
         System.out.println("\n【4.1 最大叶子节点大小的影响】");
         System.out.println(SUB_SEPARATOR);
 
-        int[] leafSizes = { 10, 25, 50, 100, 200 };
+        int[] leafSizes = {10, 25, 50, 100, 200};
         VectorData query = dataset.get(0);
         double radius = 1.5;
 
-        System.out.printf("%-12s | %-10s | %-10s | %-12s | %-12s%n",
-                "叶子大小", "GH树高", "VP树高", "GH距离计算", "VP距离计算");
+        System.out.printf("%-12s | %-10s | %-10s | %-12s | %-12s%n", "叶子大小", "GH树高", "VP树高",
+                "GH距离计算", "VP距离计算");
         System.out.println("-".repeat(70));
 
         for (int leafSize : leafSizes) {
-            TreeConfig config = new TreeConfig.Builder()
-                    .maxLeafSize(leafSize)
-                    .minTreeHeight(2)
-                    .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT)
-                    .randomSeed(42)
-                    .build();
+            TreeConfig config = new TreeConfig.Builder().maxLeafSize(leafSize).minTreeHeight(2)
+                    .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT).randomSeed(42).build();
 
             GHTree ghTree = new GHTree(config);
             ghTree.buildIndex(dataset, metric);
@@ -203,8 +199,8 @@ public class TreePerformanceAnalysis {
             vpTree.resetStatistics();
             vpTree.rangeQuery(query, radius);
 
-            System.out.printf("%-12d | %-10d | %-10d | %-12d | %-12d%n",
-                    leafSize, ghTree.getTreeHeight(), vpTree.getTreeHeight(),
+            System.out.printf("%-12d | %-10d | %-10d | %-12d | %-12d%n", leafSize,
+                    ghTree.getTreeHeight(), vpTree.getTreeHeight(),
                     ghTree.getDistanceComputations(), vpTree.getDistanceComputations());
         }
 
@@ -212,23 +208,17 @@ public class TreePerformanceAnalysis {
         System.out.println("\n【4.2 Pivot选择策略的影响】");
         System.out.println(SUB_SEPARATOR);
 
-        TreeConfig.PivotSelectionStrategy[] strategies = {
-                TreeConfig.PivotSelectionStrategy.RANDOM,
-                TreeConfig.PivotSelectionStrategy.FFT,
-                TreeConfig.PivotSelectionStrategy.MAX_SPREAD
-        };
+        TreeConfig.PivotSelectionStrategy[] strategies =
+                {TreeConfig.PivotSelectionStrategy.RANDOM, TreeConfig.PivotSelectionStrategy.FFT,
+                        TreeConfig.PivotSelectionStrategy.MAX_SPREAD};
 
-        System.out.printf("%-15s | %-12s | %-12s | %-12s | %-12s%n",
-                "策略", "GH构建距离", "VP构建距离", "GH查询距离", "VP查询距离");
+        System.out.printf("%-15s | %-12s | %-12s | %-12s | %-12s%n", "策略", "GH构建距离", "VP构建距离",
+                "GH查询距离", "VP查询距离");
         System.out.println("-".repeat(75));
 
         for (TreeConfig.PivotSelectionStrategy strategy : strategies) {
-            TreeConfig config = new TreeConfig.Builder()
-                    .maxLeafSize(50)
-                    .minTreeHeight(3)
-                    .pivotStrategy(strategy)
-                    .randomSeed(42)
-                    .build();
+            TreeConfig config = new TreeConfig.Builder().maxLeafSize(50).minTreeHeight(3)
+                    .pivotStrategy(strategy).randomSeed(42).build();
 
             GHTree ghTree = new GHTree(config);
             ghTree.buildIndex(dataset, metric);
@@ -244,30 +234,24 @@ public class TreePerformanceAnalysis {
             vpTree.rangeQuery(query, radius);
             int vpQueryDist = vpTree.getDistanceComputations();
 
-            System.out.printf("%-15s | %-12d | %-12d | %-12d | %-12d%n",
-                    strategy, ghBuildDist, vpBuildDist, ghQueryDist, vpQueryDist);
+            System.out.printf("%-15s | %-12d | %-12d | %-12d | %-12d%n", strategy, ghBuildDist,
+                    vpBuildDist, ghQueryDist, vpQueryDist);
         }
     }
 
     /**
      * 在向量数据集上运行实验
      */
-    private static void runExperimentOnDataset(String datasetName,
-            List<VectorData> dataset,
-            MetricFunction metric,
-            double[] radii, int[] kValues) {
+    private static void runExperimentOnDataset(String datasetName, List<VectorData> dataset,
+            MetricFunction metric, double[] radii, int[] kValues) {
         System.out.println("\n数据集: " + datasetName);
         System.out.println("数据量: " + dataset.size());
         System.out.println("维度: " + dataset.get(0).getDimension());
         System.out.println();
 
         // 配置
-        TreeConfig config = new TreeConfig.Builder()
-                .maxLeafSize(50)
-                .minTreeHeight(3)
-                .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT)
-                .randomSeed(42)
-                .build();
+        TreeConfig config = new TreeConfig.Builder().maxLeafSize(50).minTreeHeight(3)
+                .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT).randomSeed(42).build();
 
         // 构建索引
         System.out.println("【构建性能】");
@@ -283,15 +267,15 @@ public class TreePerformanceAnalysis {
         vpTree.buildIndex(dataset, metric);
         long vpBuildTime = (System.nanoTime() - startTime) / 1_000_000;
 
-        System.out.printf("%-15s | %-12s | %-12s | %-10s | %-10s%n",
-                "索引类型", "构建时间(ms)", "距离计算", "树高", "节点数");
+        System.out.printf("%-15s | %-12s | %-12s | %-10s | %-10s%n", "索引类型", "构建时间(ms)", "距离计算",
+                "树高", "节点数");
         System.out.println("-".repeat(65));
-        System.out.printf("%-15s | %-12d | %-12d | %-10d | %-10d%n",
-                "GH-Tree", ghBuildTime, ghTree.getBuildDistanceComputations(),
-                ghTree.getTreeHeight(), ghTree.getTotalNodes());
-        System.out.printf("%-15s | %-12d | %-12d | %-10d | %-10d%n",
-                "VP-Tree", vpBuildTime, vpTree.getBuildDistanceComputations(),
-                vpTree.getTreeHeight(), vpTree.getTotalNodes());
+        System.out.printf("%-15s | %-12d | %-12d | %-10d | %-10d%n", "GH-Tree", ghBuildTime,
+                ghTree.getBuildDistanceComputations(), ghTree.getTreeHeight(),
+                ghTree.getTotalNodes());
+        System.out.printf("%-15s | %-12d | %-12d | %-10d | %-10d%n", "VP-Tree", vpBuildTime,
+                vpTree.getBuildDistanceComputations(), vpTree.getTreeHeight(),
+                vpTree.getTotalNodes());
 
         // 范围查询性能
         System.out.println("\n【范围查询性能】");
@@ -305,8 +289,8 @@ public class TreePerformanceAnalysis {
             queryPoints.add(dataset.get(rand.nextInt(dataset.size())));
         }
 
-        System.out.printf("%-10s | %-12s | %-12s | %-12s | %-10s | %-10s%n",
-                "半径", "线性扫描", "GH-Tree", "VP-Tree", "GH剪枝率", "VP剪枝率");
+        System.out.printf("%-10s | %-12s | %-12s | %-12s | %-10s | %-10s%n", "半径", "线性扫描",
+                "GH-Tree", "VP-Tree", "GH剪枝率", "VP剪枝率");
         System.out.println("-".repeat(75));
 
         for (double radius : radii) {
@@ -330,16 +314,16 @@ public class TreePerformanceAnalysis {
             double ghPrune = 100.0 * (1.0 - (double) ghTotal / linearTotal);
             double vpPrune = 100.0 * (1.0 - (double) vpTotal / linearTotal);
 
-            System.out.printf("%-10.1f | %-12d | %-12d | %-12d | %-9.1f%% | %-9.1f%%%n",
-                    radius, linearTotal, ghTotal, vpTotal, ghPrune, vpPrune);
+            System.out.printf("%-10.1f | %-12d | %-12d | %-12d | %-9.1f%% | %-9.1f%%%n", radius,
+                    linearTotal, ghTotal, vpTotal, ghPrune, vpPrune);
         }
 
         // kNN查询性能
         System.out.println("\n【kNN查询性能】");
         System.out.println(SUB_SEPARATOR);
 
-        System.out.printf("%-6s | %-12s | %-12s | %-12s | %-10s | %-10s%n",
-                "k", "线性扫描", "GH-Tree", "VP-Tree", "GH剪枝率", "VP剪枝率");
+        System.out.printf("%-6s | %-12s | %-12s | %-12s | %-10s | %-10s%n", "k", "线性扫描", "GH-Tree",
+                "VP-Tree", "GH剪枝率", "VP剪枝率");
         System.out.println("-".repeat(70));
 
         for (int k : kValues) {
@@ -360,16 +344,15 @@ public class TreePerformanceAnalysis {
             double ghPrune = 100.0 * (1.0 - (double) ghTotal / linearTotal);
             double vpPrune = 100.0 * (1.0 - (double) vpTotal / linearTotal);
 
-            System.out.printf("%-6d | %-12d | %-12d | %-12d | %-9.1f%% | %-9.1f%%%n",
-                    k, linearTotal, ghTotal, vpTotal, ghPrune, vpPrune);
+            System.out.printf("%-6d | %-12d | %-12d | %-12d | %-9.1f%% | %-9.1f%%%n", k,
+                    linearTotal, ghTotal, vpTotal, ghPrune, vpPrune);
         }
     }
 
     /**
      * 在蛋白质数据集上运行实验
      */
-    private static void runProteinExperimentOnDataset(String datasetName,
-            List<ProteinData> dataset,
+    private static void runProteinExperimentOnDataset(String datasetName, List<ProteinData> dataset,
             double[] radii, int[] kValues) {
         System.out.println("\n数据集: " + datasetName);
         System.out.println("数据量: " + dataset.size());
@@ -378,12 +361,8 @@ public class TreePerformanceAnalysis {
 
         MetricFunction metric = new AlignmentDistance();
 
-        TreeConfig config = new TreeConfig.Builder()
-                .maxLeafSize(30)
-                .minTreeHeight(3)
-                .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT)
-                .randomSeed(42)
-                .build();
+        TreeConfig config = new TreeConfig.Builder().maxLeafSize(30).minTreeHeight(3)
+                .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT).randomSeed(42).build();
 
         // 构建索引
         System.out.println("【构建性能】");
@@ -399,15 +378,15 @@ public class TreePerformanceAnalysis {
         vpTree.buildIndex(dataset, metric);
         long vpBuildTime = (System.nanoTime() - startTime) / 1_000_000;
 
-        System.out.printf("%-15s | %-12s | %-12s | %-10s | %-10s%n",
-                "索引类型", "构建时间(ms)", "距离计算", "树高", "节点数");
+        System.out.printf("%-15s | %-12s | %-12s | %-10s | %-10s%n", "索引类型", "构建时间(ms)", "距离计算",
+                "树高", "节点数");
         System.out.println("-".repeat(65));
-        System.out.printf("%-15s | %-12d | %-12d | %-10d | %-10d%n",
-                "GH-Tree", ghBuildTime, ghTree.getBuildDistanceComputations(),
-                ghTree.getTreeHeight(), ghTree.getTotalNodes());
-        System.out.printf("%-15s | %-12d | %-12d | %-10d | %-10d%n",
-                "VP-Tree", vpBuildTime, vpTree.getBuildDistanceComputations(),
-                vpTree.getTreeHeight(), vpTree.getTotalNodes());
+        System.out.printf("%-15s | %-12d | %-12d | %-10d | %-10d%n", "GH-Tree", ghBuildTime,
+                ghTree.getBuildDistanceComputations(), ghTree.getTreeHeight(),
+                ghTree.getTotalNodes());
+        System.out.printf("%-15s | %-12d | %-12d | %-10d | %-10d%n", "VP-Tree", vpBuildTime,
+                vpTree.getBuildDistanceComputations(), vpTree.getTreeHeight(),
+                vpTree.getTotalNodes());
 
         // 范围查询性能
         System.out.println("\n【范围查询性能】");
@@ -420,8 +399,8 @@ public class TreePerformanceAnalysis {
             queryPoints.add(dataset.get(rand.nextInt(dataset.size())));
         }
 
-        System.out.printf("%-10s | %-12s | %-12s | %-12s | %-10s | %-10s%n",
-                "半径", "线性扫描", "GH-Tree", "VP-Tree", "GH剪枝率", "VP剪枝率");
+        System.out.printf("%-10s | %-12s | %-12s | %-12s | %-10s | %-10s%n", "半径", "线性扫描",
+                "GH-Tree", "VP-Tree", "GH剪枝率", "VP剪枝率");
         System.out.println("-".repeat(75));
 
         for (double radius : radii) {
@@ -442,8 +421,8 @@ public class TreePerformanceAnalysis {
             double ghPrune = 100.0 * (1.0 - (double) ghTotal / linearTotal);
             double vpPrune = 100.0 * (1.0 - (double) vpTotal / linearTotal);
 
-            System.out.printf("%-10.1f | %-12d | %-12d | %-12d | %-9.1f%% | %-9.1f%%%n",
-                    radius, linearTotal, ghTotal, vpTotal, ghPrune, vpPrune);
+            System.out.printf("%-10.1f | %-12d | %-12d | %-12d | %-9.1f%% | %-9.1f%%%n", radius,
+                    linearTotal, ghTotal, vpTotal, ghPrune, vpPrune);
         }
     }
 

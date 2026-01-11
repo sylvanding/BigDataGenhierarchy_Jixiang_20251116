@@ -85,13 +85,9 @@ public class TreeDemo {
         System.out.println("\n【2. GH树构建演示】");
         System.out.println(SUB_SEPARATOR);
 
-        TreeConfig ghConfig = new TreeConfig.Builder()
-                .maxLeafSize(3)
-                .minTreeHeight(2)
-                .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT)
-                .randomSeed(42) // 固定随机种子，便于重现
-                .verbose(true)
-                .build();
+        TreeConfig ghConfig = new TreeConfig.Builder().maxLeafSize(3).minTreeHeight(2)
+                .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT).randomSeed(42) // 固定随机种子，便于重现
+                .verbose(true).build();
 
         GHTree ghTree = new GHTree(ghConfig);
         ghTree.buildIndex(dataset, metric);
@@ -103,13 +99,9 @@ public class TreeDemo {
         System.out.println("\n【3. VP树构建演示】");
         System.out.println(SUB_SEPARATOR);
 
-        TreeConfig vpConfig = new TreeConfig.Builder()
-                .maxLeafSize(3)
-                .minTreeHeight(2)
-                .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT)
-                .randomSeed(42) // 使用相同随机种子
-                .verbose(true)
-                .build();
+        TreeConfig vpConfig = new TreeConfig.Builder().maxLeafSize(3).minTreeHeight(2)
+                .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT).randomSeed(42) // 使用相同随机种子
+                .verbose(true).build();
 
         VPTree vpTree = new VPTree(vpConfig);
         vpTree.buildIndex(dataset, metric);
@@ -121,7 +113,7 @@ public class TreeDemo {
         System.out.println("\n【4. 范围查询演示】");
         System.out.println(SUB_SEPARATOR);
 
-        VectorData queryPoint = new VectorData(100, new double[] { 5.0, 5.0 });
+        VectorData queryPoint = new VectorData(100, new double[] {5.0, 5.0});
         double radius = 3.0;
 
         System.out.println("查询点: (5.0, 5.0)");
@@ -131,8 +123,8 @@ public class TreeDemo {
         // 线性扫描结果（作为基准）
         System.out.println("--- 线性扫描结果（基准） ---");
         ghTree.resetStatistics();
-        List<MetricSpaceData> linearResults = LinearScanRangeQuery.execute(
-                dataset, new RangeQuery(queryPoint, radius), metric, false);
+        List<MetricSpaceData> linearResults = LinearScanRangeQuery.execute(dataset,
+                new RangeQuery(queryPoint, radius), metric, false);
         System.out.println("结果数量: " + linearResults.size());
         System.out.println("距离计算次数: " + dataset.size());
         printRangeResults(linearResults, queryPoint, metric);
@@ -196,10 +188,8 @@ public class TreeDemo {
         System.out.println("第二部分：使用文件数据演示");
         System.out.println(SEPARATOR);
 
-        String[] testFiles = {
-                "UMAD-Dataset/full/Vector/unzipped/clusteredvector-2d-100k-100c.txt",
-                "UMAD-Dataset/examples/Vector/test_vectors_2d.txt"
-        };
+        String[] testFiles = {"UMAD-Dataset/full/Vector/unzipped/clusteredvector-2d-100k-100c.txt",
+                "UMAD-Dataset/examples/Vector/test_vectors_2d.txt"};
 
         String filePath = null;
         for (String path : testFiles) {
@@ -231,13 +221,9 @@ public class TreeDemo {
             System.out.println("\n【2. 构建GH树】");
             System.out.println(SUB_SEPARATOR);
 
-            TreeConfig ghConfig = new TreeConfig.Builder()
-                    .maxLeafSize(50)
-                    .minTreeHeight(3)
-                    .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT)
-                    .randomSeed(42)
-                    .verbose(false)
-                    .build();
+            TreeConfig ghConfig = new TreeConfig.Builder().maxLeafSize(50).minTreeHeight(3)
+                    .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT).randomSeed(42)
+                    .verbose(false).build();
 
             GHTree ghTree = new GHTree(ghConfig);
             long startTime = System.currentTimeMillis();
@@ -254,13 +240,9 @@ public class TreeDemo {
             System.out.println("\n【3. 构建VP树】");
             System.out.println(SUB_SEPARATOR);
 
-            TreeConfig vpConfig = new TreeConfig.Builder()
-                    .maxLeafSize(50)
-                    .minTreeHeight(3)
-                    .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT)
-                    .randomSeed(42)
-                    .verbose(false)
-                    .build();
+            TreeConfig vpConfig = new TreeConfig.Builder().maxLeafSize(50).minTreeHeight(3)
+                    .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT).randomSeed(42)
+                    .verbose(false).build();
 
             VPTree vpTree = new VPTree(vpConfig);
             startTime = System.currentTimeMillis();
@@ -278,19 +260,19 @@ public class TreeDemo {
             System.out.println(SUB_SEPARATOR);
 
             VectorData queryPoint = dataset.get(0); // 使用第一个数据点作为查询点
-            double[] radii = { 0.5, 1.0, 2.0 };
+            double[] radii = {0.5, 1.0, 2.0};
 
             System.out.println("查询点: " + queryPoint);
             System.out.println();
 
-            System.out.printf("%-10s | %-12s | %-12s | %-12s | %-12s | %-12s%n",
-                    "半径", "线性扫描", "GH树", "VP树", "GH剪枝率", "VP剪枝率");
+            System.out.printf("%-10s | %-12s | %-12s | %-12s | %-12s | %-12s%n", "半径", "线性扫描",
+                    "GH树", "VP树", "GH剪枝率", "VP剪枝率");
             System.out.println("-".repeat(80));
 
             for (double radius : radii) {
                 // 线性扫描
-                List<MetricSpaceData> linearResults = LinearScanRangeQuery.execute(
-                        dataset, new RangeQuery(queryPoint, radius), metric, false);
+                List<MetricSpaceData> linearResults = LinearScanRangeQuery.execute(dataset,
+                        new RangeQuery(queryPoint, radius), metric, false);
                 int linearDist = dataset.size();
 
                 // GH树
@@ -323,13 +305,13 @@ public class TreeDemo {
             System.out.println("\n【5. kNN查询性能对比】");
             System.out.println(SUB_SEPARATOR);
 
-            int[] kValues = { 5, 10, 20 };
+            int[] kValues = {5, 10, 20};
 
             System.out.println("查询点: " + queryPoint);
             System.out.println();
 
-            System.out.printf("%-6s | %-12s | %-12s | %-12s | %-12s%n",
-                    "k", "线性扫描", "GH树", "VP树", "GH剪枝率");
+            System.out.printf("%-6s | %-12s | %-12s | %-12s | %-12s%n", "k", "线性扫描", "GH树", "VP树",
+                    "GH剪枝率");
             System.out.println("-".repeat(65));
 
             for (int k : kValues) {
@@ -349,8 +331,8 @@ public class TreeDemo {
                 double ghPruneRate = 100.0 * (1.0 - (double) ghDist / linearDist);
                 double vpPruneRate = 100.0 * (1.0 - (double) vpDist / linearDist);
 
-                System.out.printf("%-6d | %-12d | %-12d | %-12d | %-11.1f%%%n",
-                        k, linearDist, ghDist, vpDist, ghPruneRate);
+                System.out.printf("%-6d | %-12d | %-12d | %-12d | %-11.1f%%%n", k, linearDist,
+                        ghDist, vpDist, ghPruneRate);
             }
 
         } catch (Exception e) {
@@ -366,23 +348,9 @@ public class TreeDemo {
         List<VectorData> dataset = new ArrayList<>();
 
         // 创建一组易于理解的2D点
-        double[][] points = {
-                { 1.0, 1.0 },
-                { 2.0, 2.0 },
-                { 3.0, 1.0 },
-                { 4.0, 4.0 },
-                { 5.0, 2.0 },
-                { 6.0, 5.0 },
-                { 7.0, 3.0 },
-                { 8.0, 6.0 },
-                { 9.0, 4.0 },
-                { 10.0, 7.0 },
-                { 3.0, 5.0 },
-                { 6.0, 1.0 },
-                { 2.0, 7.0 },
-                { 8.0, 2.0 },
-                { 4.0, 8.0 }
-        };
+        double[][] points = {{1.0, 1.0}, {2.0, 2.0}, {3.0, 1.0}, {4.0, 4.0}, {5.0, 2.0}, {6.0, 5.0},
+                {7.0, 3.0}, {8.0, 6.0}, {9.0, 4.0}, {10.0, 7.0}, {3.0, 5.0}, {6.0, 1.0}, {2.0, 7.0},
+                {8.0, 2.0}, {4.0, 8.0}};
 
         for (int i = 0; i < points.length; i++) {
             dataset.add(new VectorData(i, points[i]));
@@ -394,8 +362,8 @@ public class TreeDemo {
     /**
      * 打印范围查询结果
      */
-    private static void printRangeResults(List<MetricSpaceData> results,
-            MetricSpaceData query, MetricFunction metric) {
+    private static void printRangeResults(List<MetricSpaceData> results, MetricSpaceData query,
+            MetricFunction metric) {
         System.out.println("结果详情:");
 
         // 计算距离并排序
@@ -409,16 +377,16 @@ public class TreeDemo {
         for (Map.Entry<MetricSpaceData, Double> entry : sortedResults) {
             VectorData v = (VectorData) entry.getKey();
             double[] coords = v.getCoordinates();
-            System.out.printf("  ID=%d: (%.1f, %.1f), 距离=%.4f%n",
-                    v.getDataId(), coords[0], coords[1], entry.getValue());
+            System.out.printf("  ID=%d: (%.1f, %.1f), 距离=%.4f%n", v.getDataId(), coords[0],
+                    coords[1], entry.getValue());
         }
     }
 
     /**
      * 打印kNN查询结果
      */
-    private static void printKnnResults(List<MetricSpaceData> results,
-            MetricSpaceData query, MetricFunction metric) {
+    private static void printKnnResults(List<MetricSpaceData> results, MetricSpaceData query,
+            MetricFunction metric) {
         System.out.println("前" + results.size() + "个最近邻:");
 
         int rank = 1;
@@ -426,8 +394,8 @@ public class TreeDemo {
             double dist = metric.getDistance(query, data);
             VectorData v = (VectorData) data;
             double[] coords = v.getCoordinates();
-            System.out.printf("  #%d: ID=%d (%.1f, %.1f), 距离=%.4f%n",
-                    rank++, v.getDataId(), coords[0], coords[1], dist);
+            System.out.printf("  #%d: ID=%d (%.1f, %.1f), 距离=%.4f%n", rank++, v.getDataId(),
+                    coords[0], coords[1], dist);
         }
     }
 
@@ -435,8 +403,7 @@ public class TreeDemo {
      * 验证结果一致性
      */
     private static boolean verifyResultConsistency(List<MetricSpaceData> linear,
-            List<MetricSpaceData> gh,
-            List<MetricSpaceData> vp) {
+            List<MetricSpaceData> gh, List<MetricSpaceData> vp) {
         return setEquals(linear, gh) && setEquals(linear, vp);
     }
 

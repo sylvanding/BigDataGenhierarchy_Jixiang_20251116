@@ -37,12 +37,8 @@ public class TreeCorrectnessTest {
         List<VectorData> dataset = createVector2DDataset(100);
         MetricFunction metric = MinkowskiDistance.L2;
 
-        TreeConfig config = new TreeConfig.Builder()
-                .maxLeafSize(10)
-                .minTreeHeight(3)
-                .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT)
-                .randomSeed(42)
-                .build();
+        TreeConfig config = new TreeConfig.Builder().maxLeafSize(10).minTreeHeight(3)
+                .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT).randomSeed(42).build();
 
         GHTree ghTree = new GHTree(config);
         ghTree.buildIndex(dataset, metric);
@@ -51,7 +47,7 @@ public class TreeCorrectnessTest {
         vpTree.buildIndex(dataset, metric);
 
         Random rand = new Random(123);
-        double[] radii = { 0.5, 1.0, 2.0, 5.0 };
+        double[] radii = {0.5, 1.0, 2.0, 5.0};
         int numQueries = 10;
 
         System.out.println("数据集大小: " + dataset.size());
@@ -64,8 +60,8 @@ public class TreeCorrectnessTest {
             VectorData queryPoint = dataset.get(rand.nextInt(dataset.size()));
 
             for (double radius : radii) {
-                List<MetricSpaceData> linearResults = LinearScanRangeQuery.execute(
-                        dataset, new RangeQuery(queryPoint, radius), metric, false);
+                List<MetricSpaceData> linearResults = LinearScanRangeQuery.execute(dataset,
+                        new RangeQuery(queryPoint, radius), metric, false);
 
                 ghTree.resetStatistics();
                 List<MetricSpaceData> ghResults = ghTree.rangeQuery(queryPoint, radius);
@@ -98,12 +94,8 @@ public class TreeCorrectnessTest {
         List<VectorData> dataset = createHighDimDataset(200, 10);
         MetricFunction metric = MinkowskiDistance.L2;
 
-        TreeConfig config = new TreeConfig.Builder()
-                .maxLeafSize(15)
-                .minTreeHeight(3)
-                .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT)
-                .randomSeed(42)
-                .build();
+        TreeConfig config = new TreeConfig.Builder().maxLeafSize(15).minTreeHeight(3)
+                .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT).randomSeed(42).build();
 
         GHTree ghTree = new GHTree(config);
         ghTree.buildIndex(dataset, metric);
@@ -112,7 +104,7 @@ public class TreeCorrectnessTest {
         vpTree.buildIndex(dataset, metric);
 
         Random rand = new Random(123);
-        double[] radii = { 2.0, 3.0, 4.0 };
+        double[] radii = {2.0, 3.0, 4.0};
         int numQueries = 10;
 
         System.out.println("数据集大小: " + dataset.size());
@@ -122,8 +114,8 @@ public class TreeCorrectnessTest {
             VectorData queryPoint = dataset.get(rand.nextInt(dataset.size()));
 
             for (double radius : radii) {
-                List<MetricSpaceData> linearResults = LinearScanRangeQuery.execute(
-                        dataset, new RangeQuery(queryPoint, radius), metric, false);
+                List<MetricSpaceData> linearResults = LinearScanRangeQuery.execute(dataset,
+                        new RangeQuery(queryPoint, radius), metric, false);
 
                 ghTree.resetStatistics();
                 List<MetricSpaceData> ghResults = ghTree.rangeQuery(queryPoint, radius);
@@ -147,12 +139,8 @@ public class TreeCorrectnessTest {
         List<VectorData> dataset = createVector2DDataset(100);
         MetricFunction metric = MinkowskiDistance.L2;
 
-        TreeConfig config = new TreeConfig.Builder()
-                .maxLeafSize(10)
-                .minTreeHeight(3)
-                .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT)
-                .randomSeed(42)
-                .build();
+        TreeConfig config = new TreeConfig.Builder().maxLeafSize(10).minTreeHeight(3)
+                .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT).randomSeed(42).build();
 
         GHTree ghTree = new GHTree(config);
         ghTree.buildIndex(dataset, metric);
@@ -161,7 +149,7 @@ public class TreeCorrectnessTest {
         vpTree.buildIndex(dataset, metric);
 
         Random rand = new Random(123);
-        int[] kValues = { 1, 3, 5, 10 };
+        int[] kValues = {1, 3, 5, 10};
         int numQueries = 10;
 
         System.out.println("数据集大小: " + dataset.size());
@@ -214,12 +202,8 @@ public class TreeCorrectnessTest {
         List<ProteinData> dataset = createProteinDataset(50, 6);
         MetricFunction metric = new AlignmentDistance();
 
-        TreeConfig config = new TreeConfig.Builder()
-                .maxLeafSize(8)
-                .minTreeHeight(3)
-                .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT)
-                .randomSeed(42)
-                .build();
+        TreeConfig config = new TreeConfig.Builder().maxLeafSize(8).minTreeHeight(3)
+                .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT).randomSeed(42).build();
 
         GHTree ghTree = new GHTree(config);
         ghTree.buildIndex(dataset, metric);
@@ -233,15 +217,15 @@ public class TreeCorrectnessTest {
         System.out.println("VP树高: " + vpTree.getTreeHeight());
 
         Random rand = new Random(123);
-        double[] radii = { 1.0, 2.0, 3.0 };
+        double[] radii = {1.0, 2.0, 3.0};
         int numQueries = 5;
 
         for (int q = 0; q < numQueries; q++) {
             ProteinData queryPoint = dataset.get(rand.nextInt(dataset.size()));
 
             for (double radius : radii) {
-                List<MetricSpaceData> linearResults = LinearScanRangeQuery.execute(
-                        dataset, new RangeQuery(queryPoint, radius), metric, false);
+                List<MetricSpaceData> linearResults = LinearScanRangeQuery.execute(dataset,
+                        new RangeQuery(queryPoint, radius), metric, false);
 
                 ghTree.resetStatistics();
                 List<MetricSpaceData> ghResults = ghTree.rangeQuery(queryPoint, radius);
@@ -265,12 +249,8 @@ public class TreeCorrectnessTest {
         List<VectorData> dataset = createVector2DDataset(50);
         MetricFunction metric = MinkowskiDistance.L2;
 
-        TreeConfig config = new TreeConfig.Builder()
-                .maxLeafSize(10)
-                .minTreeHeight(2)
-                .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT)
-                .randomSeed(42)
-                .build();
+        TreeConfig config = new TreeConfig.Builder().maxLeafSize(10).minTreeHeight(2)
+                .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT).randomSeed(42).build();
 
         GHTree ghTree = new GHTree(config);
         ghTree.buildIndex(dataset, metric);
@@ -317,9 +297,8 @@ public class TreeCorrectnessTest {
         List<VectorData> data = new ArrayList<>();
         Random rand = new Random(42);
         for (int i = 0; i < size; i++) {
-            data.add(new VectorData(i, new double[] {
-                    rand.nextDouble() * 10, rand.nextDouble() * 10
-            }));
+            data.add(new VectorData(i,
+                    new double[] {rand.nextDouble() * 10, rand.nextDouble() * 10}));
         }
         return data;
     }

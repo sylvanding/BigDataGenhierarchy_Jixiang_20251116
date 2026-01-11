@@ -33,12 +33,8 @@ public class TreeConsistencyTest {
         List<VectorData> dataset = createDataset(200);
         MetricFunction metric = MinkowskiDistance.L2;
 
-        TreeConfig config = new TreeConfig.Builder()
-                .maxLeafSize(20)
-                .minTreeHeight(3)
-                .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT)
-                .randomSeed(42)
-                .build();
+        TreeConfig config = new TreeConfig.Builder().maxLeafSize(20).minTreeHeight(3)
+                .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT).randomSeed(42).build();
 
         GHTree ghTree = new GHTree(config);
         ghTree.buildIndex(dataset, metric);
@@ -52,18 +48,17 @@ public class TreeConsistencyTest {
         System.out.println();
 
         Random rand = new Random(123);
-        double[] radii = { 0.5, 1.0, 2.0, 3.0, 5.0 };
+        double[] radii = {0.5, 1.0, 2.0, 3.0, 5.0};
         int numQueries = 20;
         int consistentCount = 0;
 
-        System.out.printf("%-8s | %-8s | %-8s | %-8s | %-10s%n",
-                "查询#", "半径", "GH结果", "VP结果", "一致性");
+        System.out.printf("%-8s | %-8s | %-8s | %-8s | %-10s%n", "查询#", "半径", "GH结果", "VP结果",
+                "一致性");
         System.out.println("-".repeat(50));
 
         for (int q = 0; q < numQueries; q++) {
-            VectorData queryPoint = new VectorData(1000 + q, new double[] {
-                    rand.nextDouble() * 10, rand.nextDouble() * 10
-            });
+            VectorData queryPoint = new VectorData(1000 + q,
+                    new double[] {rand.nextDouble() * 10, rand.nextDouble() * 10});
 
             double radius = radii[q % radii.length];
 
@@ -77,18 +72,16 @@ public class TreeConsistencyTest {
             if (consistent)
                 consistentCount++;
 
-            System.out.printf("%-8d | %-8.1f | %-8d | %-8d | %-10s%n",
-                    q + 1, radius, ghResults.size(), vpResults.size(),
-                    consistent ? "✓" : "✗");
+            System.out.printf("%-8d | %-8.1f | %-8d | %-8d | %-10s%n", q + 1, radius,
+                    ghResults.size(), vpResults.size(), consistent ? "✓" : "✗");
 
-            assertTrue(consistent,
-                    String.format("查询%d: GH树(%d)和VP树(%d)结果应一致",
-                            q + 1, ghResults.size(), vpResults.size()));
+            assertTrue(consistent, String.format("查询%d: GH树(%d)和VP树(%d)结果应一致", q + 1,
+                    ghResults.size(), vpResults.size()));
         }
 
         System.out.println("-".repeat(50));
-        System.out.printf("一致性: %d/%d (%.1f%%)%n",
-                consistentCount, numQueries, 100.0 * consistentCount / numQueries);
+        System.out.printf("一致性: %d/%d (%.1f%%)%n", consistentCount, numQueries,
+                100.0 * consistentCount / numQueries);
         System.out.println("测试通过！\n");
     }
 
@@ -100,12 +93,8 @@ public class TreeConsistencyTest {
         List<VectorData> dataset = createDataset(200);
         MetricFunction metric = MinkowskiDistance.L2;
 
-        TreeConfig config = new TreeConfig.Builder()
-                .maxLeafSize(20)
-                .minTreeHeight(3)
-                .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT)
-                .randomSeed(42)
-                .build();
+        TreeConfig config = new TreeConfig.Builder().maxLeafSize(20).minTreeHeight(3)
+                .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT).randomSeed(42).build();
 
         GHTree ghTree = new GHTree(config);
         ghTree.buildIndex(dataset, metric);
@@ -114,19 +103,17 @@ public class TreeConsistencyTest {
         vpTree.buildIndex(dataset, metric);
 
         Random rand = new Random(123);
-        int[] kValues = { 1, 3, 5, 10, 20 };
+        int[] kValues = {1, 3, 5, 10, 20};
         int numQueries = 15;
         int consistentCount = 0;
         int totalTests = numQueries * kValues.length;
 
-        System.out.printf("%-8s | %-6s | %-8s | %-8s | %-10s%n",
-                "查询#", "k", "GH结果", "VP结果", "一致性");
+        System.out.printf("%-8s | %-6s | %-8s | %-8s | %-10s%n", "查询#", "k", "GH结果", "VP结果", "一致性");
         System.out.println("-".repeat(50));
 
         for (int q = 0; q < numQueries; q++) {
-            VectorData queryPoint = new VectorData(1000 + q, new double[] {
-                    rand.nextDouble() * 10, rand.nextDouble() * 10
-            });
+            VectorData queryPoint = new VectorData(1000 + q,
+                    new double[] {rand.nextDouble() * 10, rand.nextDouble() * 10});
 
             for (int k : kValues) {
                 ghTree.resetStatistics();
@@ -143,20 +130,18 @@ public class TreeConsistencyTest {
                     consistentCount++;
 
                 if (q < 3) {
-                    System.out.printf("%-8d | %-6d | %-8d | %-8d | %-10s%n",
-                            q + 1, k, ghResults.size(), vpResults.size(),
-                            consistent ? "✓" : "✗");
+                    System.out.printf("%-8d | %-6d | %-8d | %-8d | %-10s%n", q + 1, k,
+                            ghResults.size(), vpResults.size(), consistent ? "✓" : "✗");
                 }
 
-                assertTrue(consistent,
-                        String.format("查询%d, k=%d: GH树和VP树kNN结果应一致", q + 1, k));
+                assertTrue(consistent, String.format("查询%d, k=%d: GH树和VP树kNN结果应一致", q + 1, k));
             }
         }
 
         System.out.println("...");
         System.out.println("-".repeat(50));
-        System.out.printf("一致性: %d/%d (%.1f%%)%n",
-                consistentCount, totalTests, 100.0 * consistentCount / totalTests);
+        System.out.printf("一致性: %d/%d (%.1f%%)%n", consistentCount, totalTests,
+                100.0 * consistentCount / totalTests);
         System.out.println("测试通过！\n");
     }
 
@@ -168,13 +153,11 @@ public class TreeConsistencyTest {
         List<VectorData> dataset = createDataset(100);
         MetricFunction metric = MinkowskiDistance.L2;
 
-        TreeConfig.PivotSelectionStrategy[] strategies = {
-                TreeConfig.PivotSelectionStrategy.RANDOM,
-                TreeConfig.PivotSelectionStrategy.FFT,
-                TreeConfig.PivotSelectionStrategy.MAX_SPREAD
-        };
+        TreeConfig.PivotSelectionStrategy[] strategies =
+                {TreeConfig.PivotSelectionStrategy.RANDOM, TreeConfig.PivotSelectionStrategy.FFT,
+                        TreeConfig.PivotSelectionStrategy.MAX_SPREAD};
 
-        VectorData queryPoint = new VectorData(999, new double[] { 5.0, 5.0 });
+        VectorData queryPoint = new VectorData(999, new double[] {5.0, 5.0});
         double radius = 2.0;
         int k = 5;
 
@@ -202,17 +185,13 @@ public class TreeConsistencyTest {
         System.out.println("预期范围查询结果数: " + expectedRangeIds.size());
         System.out.println();
 
-        System.out.printf("%-15s | %-12s | %-12s | %-12s | %-12s%n",
-                "策略", "GH范围", "VP范围", "GH-kNN", "VP-kNN");
+        System.out.printf("%-15s | %-12s | %-12s | %-12s | %-12s%n", "策略", "GH范围", "VP范围", "GH-kNN",
+                "VP-kNN");
         System.out.println("-".repeat(70));
 
         for (TreeConfig.PivotSelectionStrategy strategy : strategies) {
-            TreeConfig config = new TreeConfig.Builder()
-                    .maxLeafSize(10)
-                    .minTreeHeight(3)
-                    .pivotStrategy(strategy)
-                    .randomSeed(42)
-                    .build();
+            TreeConfig config = new TreeConfig.Builder().maxLeafSize(10).minTreeHeight(3)
+                    .pivotStrategy(strategy).randomSeed(42).build();
 
             GHTree ghTree = new GHTree(config);
             ghTree.buildIndex(dataset, metric);
@@ -237,11 +216,9 @@ public class TreeConsistencyTest {
             String ghKnnStatus = ghKnnIds.equals(expectedKnnIds) ? "✓" : "✗";
             String vpKnnStatus = vpKnnIds.equals(expectedKnnIds) ? "✓" : "✗";
 
-            System.out.printf("%-15s | %-4d %-7s | %-4d %-7s | %-4d %-7s | %-4d %-7s%n",
-                    strategy, ghRange.size(), ghRangeStatus,
-                    vpRange.size(), vpRangeStatus,
-                    ghKnn.size(), ghKnnStatus,
-                    vpKnn.size(), vpKnnStatus);
+            System.out.printf("%-15s | %-4d %-7s | %-4d %-7s | %-4d %-7s | %-4d %-7s%n", strategy,
+                    ghRange.size(), ghRangeStatus, vpRange.size(), vpRangeStatus, ghKnn.size(),
+                    ghKnnStatus, vpKnn.size(), vpKnnStatus);
 
             assertEquals(expectedRangeIds, ghRangeIds, strategy + ": GH树范围查询结果应正确");
             assertEquals(expectedRangeIds, vpRangeIds, strategy + ": VP树范围查询结果应正确");
@@ -260,12 +237,8 @@ public class TreeConsistencyTest {
         List<VectorData> dataset = createDataset(1000);
         MetricFunction metric = MinkowskiDistance.L2;
 
-        TreeConfig config = new TreeConfig.Builder()
-                .maxLeafSize(50)
-                .minTreeHeight(3)
-                .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT)
-                .randomSeed(42)
-                .build();
+        TreeConfig config = new TreeConfig.Builder().maxLeafSize(50).minTreeHeight(3)
+                .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT).randomSeed(42).build();
 
         GHTree ghTree = new GHTree(config);
         long ghStart = System.currentTimeMillis();
@@ -278,10 +251,10 @@ public class TreeConsistencyTest {
         long vpBuildTime = System.currentTimeMillis() - vpStart;
 
         System.out.println("数据集大小: " + dataset.size());
-        System.out.printf("GH树: 高度=%d, 节点数=%d, 构建时间=%dms%n",
-                ghTree.getTreeHeight(), ghTree.getTotalNodes(), ghBuildTime);
-        System.out.printf("VP树: 高度=%d, 节点数=%d, 构建时间=%dms%n",
-                vpTree.getTreeHeight(), vpTree.getTotalNodes(), vpBuildTime);
+        System.out.printf("GH树: 高度=%d, 节点数=%d, 构建时间=%dms%n", ghTree.getTreeHeight(),
+                ghTree.getTotalNodes(), ghBuildTime);
+        System.out.printf("VP树: 高度=%d, 节点数=%d, 构建时间=%dms%n", vpTree.getTreeHeight(),
+                vpTree.getTotalNodes(), vpBuildTime);
         System.out.println();
 
         Random rand = new Random(456);
@@ -290,9 +263,8 @@ public class TreeConsistencyTest {
         int knnConsistent = 0;
 
         for (int q = 0; q < numQueries; q++) {
-            VectorData queryPoint = new VectorData(10000 + q, new double[] {
-                    rand.nextDouble() * 10, rand.nextDouble() * 10
-            });
+            VectorData queryPoint = new VectorData(10000 + q,
+                    new double[] {rand.nextDouble() * 10, rand.nextDouble() * 10});
             double radius = 1.0 + rand.nextDouble() * 2;
             int k = 5 + rand.nextInt(10);
 
@@ -313,10 +285,10 @@ public class TreeConsistencyTest {
                 knnConsistent++;
         }
 
-        System.out.printf("范围查询一致性: %d/%d (%.1f%%)%n",
-                rangeConsistent, numQueries, 100.0 * rangeConsistent / numQueries);
-        System.out.printf("kNN查询一致性: %d/%d (%.1f%%)%n",
-                knnConsistent, numQueries, 100.0 * knnConsistent / numQueries);
+        System.out.printf("范围查询一致性: %d/%d (%.1f%%)%n", rangeConsistent, numQueries,
+                100.0 * rangeConsistent / numQueries);
+        System.out.printf("kNN查询一致性: %d/%d (%.1f%%)%n", knnConsistent, numQueries,
+                100.0 * knnConsistent / numQueries);
 
         assertEquals(numQueries, rangeConsistent, "所有范围查询结果应一致");
         assertEquals(numQueries, knnConsistent, "所有kNN查询结果应一致");
@@ -330,9 +302,8 @@ public class TreeConsistencyTest {
         List<VectorData> data = new ArrayList<>();
         Random rand = new Random(42);
         for (int i = 0; i < size; i++) {
-            data.add(new VectorData(i, new double[] {
-                    rand.nextDouble() * 10, rand.nextDouble() * 10
-            }));
+            data.add(new VectorData(i,
+                    new double[] {rand.nextDouble() * 10, rand.nextDouble() * 10}));
         }
         return data;
     }

@@ -33,12 +33,8 @@ public class GHTreeTest {
         // 创建测试数据集
         dataset = createTestDataset();
         metric = MinkowskiDistance.L2;
-        config = new TreeConfig.Builder()
-                .maxLeafSize(3)
-                .minTreeHeight(2)
-                .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT)
-                .randomSeed(42)
-                .verbose(false)
+        config = new TreeConfig.Builder().maxLeafSize(3).minTreeHeight(2)
+                .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT).randomSeed(42).verbose(false)
                 .build();
     }
 
@@ -47,11 +43,9 @@ public class GHTreeTest {
      */
     private List<VectorData> createTestDataset() {
         List<VectorData> data = new ArrayList<>();
-        double[][] points = {
-                { 1.0, 1.0 }, { 2.0, 2.0 }, { 3.0, 1.0 }, { 4.0, 4.0 }, { 5.0, 2.0 },
-                { 6.0, 5.0 }, { 7.0, 3.0 }, { 8.0, 6.0 }, { 9.0, 4.0 }, { 10.0, 7.0 },
-                { 3.0, 5.0 }, { 6.0, 1.0 }, { 2.0, 7.0 }, { 8.0, 2.0 }, { 4.0, 8.0 }
-        };
+        double[][] points = {{1.0, 1.0}, {2.0, 2.0}, {3.0, 1.0}, {4.0, 4.0}, {5.0, 2.0}, {6.0, 5.0},
+                {7.0, 3.0}, {8.0, 6.0}, {9.0, 4.0}, {10.0, 7.0}, {3.0, 5.0}, {6.0, 1.0}, {2.0, 7.0},
+                {8.0, 2.0}, {4.0, 8.0}};
         for (int i = 0; i < points.length; i++) {
             data.add(new VectorData(i, points[i]));
         }
@@ -75,8 +69,7 @@ public class GHTreeTest {
                 "树高度应至少为" + config.getMinTreeHeight() + "，实际为" + height);
 
         // 验证数据总量
-        assertEquals(dataset.size(), tree.getRoot().size(),
-                "树中数据总量应等于数据集大小");
+        assertEquals(dataset.size(), tree.getRoot().size(), "树中数据总量应等于数据集大小");
 
         System.out.println("构建成功！");
         System.out.println("  树高度: " + height);
@@ -95,7 +88,7 @@ public class GHTreeTest {
         tree.buildIndex(dataset, metric);
 
         // 查询点和半径
-        VectorData queryPoint = new VectorData(100, new double[] { 5.0, 5.0 });
+        VectorData queryPoint = new VectorData(100, new double[] {5.0, 5.0});
         double radius = 3.0;
 
         System.out.println("查询点: (5.0, 5.0)");
@@ -114,8 +107,7 @@ public class GHTreeTest {
         }
 
         // 验证结果
-        assertEquals(expectedIds.size(), results.size(),
-                "结果数量应与预期一致");
+        assertEquals(expectedIds.size(), results.size(), "结果数量应与预期一致");
 
         Set<Integer> actualIds = new HashSet<>();
         for (MetricSpaceData d : results) {
@@ -137,7 +129,7 @@ public class GHTreeTest {
         GHTree tree = new GHTree(config);
         tree.buildIndex(dataset, metric);
 
-        VectorData queryPoint = new VectorData(100, new double[] { 5.0, 5.0 });
+        VectorData queryPoint = new VectorData(100, new double[] {5.0, 5.0});
         int k = 3;
 
         System.out.println("查询点: (5.0, 5.0)");
@@ -204,21 +196,17 @@ public class GHTreeTest {
         List<VectorData> largeDataset = new ArrayList<>();
         Random rand = new Random(42);
         for (int i = 0; i < 500; i++) {
-            largeDataset.add(new VectorData(i, new double[] {
-                    rand.nextDouble() * 100, rand.nextDouble() * 100
-            }));
+            largeDataset.add(new VectorData(i,
+                    new double[] {rand.nextDouble() * 100, rand.nextDouble() * 100}));
         }
 
         // 测试不同的最小树高
-        int[] minHeights = { 3, 4, 5 };
+        int[] minHeights = {3, 4, 5};
 
         for (int minHeight : minHeights) {
-            TreeConfig testConfig = new TreeConfig.Builder()
-                    .maxLeafSize(20)
-                    .minTreeHeight(minHeight)
-                    .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT)
-                    .randomSeed(42)
-                    .build();
+            TreeConfig testConfig = new TreeConfig.Builder().maxLeafSize(20)
+                    .minTreeHeight(minHeight).pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT)
+                    .randomSeed(42).build();
 
             GHTree tree = new GHTree(testConfig);
             tree.buildIndex(largeDataset, metric);
@@ -226,8 +214,7 @@ public class GHTreeTest {
             assertTrue(tree.getTreeHeight() >= minHeight,
                     "树高应至少为" + minHeight + "，实际为" + tree.getTreeHeight());
 
-            System.out.printf("最小树高设置=%d，实际树高=%d ✓%n",
-                    minHeight, tree.getTreeHeight());
+            System.out.printf("最小树高设置=%d，实际树高=%d ✓%n", minHeight, tree.getTreeHeight());
         }
 
         System.out.println("测试通过！\n");
@@ -242,7 +229,7 @@ public class GHTreeTest {
         tree.buildIndex(dataset, metric);
 
         // 执行查询
-        VectorData queryPoint = new VectorData(100, new double[] { 5.0, 5.0 });
+        VectorData queryPoint = new VectorData(100, new double[] {5.0, 5.0});
         tree.rangeQuery(queryPoint, 3.0);
 
         String stats = tree.getStatistics();

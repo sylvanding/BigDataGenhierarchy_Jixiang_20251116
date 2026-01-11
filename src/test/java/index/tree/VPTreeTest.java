@@ -32,22 +32,16 @@ public class VPTreeTest {
     void setUp() {
         dataset = createTestDataset();
         metric = MinkowskiDistance.L2;
-        config = new TreeConfig.Builder()
-                .maxLeafSize(3)
-                .minTreeHeight(2)
-                .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT)
-                .randomSeed(42)
-                .verbose(false)
+        config = new TreeConfig.Builder().maxLeafSize(3).minTreeHeight(2)
+                .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT).randomSeed(42).verbose(false)
                 .build();
     }
 
     private List<VectorData> createTestDataset() {
         List<VectorData> data = new ArrayList<>();
-        double[][] points = {
-                { 1.0, 1.0 }, { 2.0, 2.0 }, { 3.0, 1.0 }, { 4.0, 4.0 }, { 5.0, 2.0 },
-                { 6.0, 5.0 }, { 7.0, 3.0 }, { 8.0, 6.0 }, { 9.0, 4.0 }, { 10.0, 7.0 },
-                { 3.0, 5.0 }, { 6.0, 1.0 }, { 2.0, 7.0 }, { 8.0, 2.0 }, { 4.0, 8.0 }
-        };
+        double[][] points = {{1.0, 1.0}, {2.0, 2.0}, {3.0, 1.0}, {4.0, 4.0}, {5.0, 2.0}, {6.0, 5.0},
+                {7.0, 3.0}, {8.0, 6.0}, {9.0, 4.0}, {10.0, 7.0}, {3.0, 5.0}, {6.0, 1.0}, {2.0, 7.0},
+                {8.0, 2.0}, {4.0, 8.0}};
         for (int i = 0; i < points.length; i++) {
             data.add(new VectorData(i, points[i]));
         }
@@ -68,8 +62,7 @@ public class VPTreeTest {
         assertTrue(height >= config.getMinTreeHeight(),
                 "树高度应至少为" + config.getMinTreeHeight() + "，实际为" + height);
 
-        assertEquals(dataset.size(), tree.getRoot().size(),
-                "树中数据总量应等于数据集大小");
+        assertEquals(dataset.size(), tree.getRoot().size(), "树中数据总量应等于数据集大小");
 
         System.out.println("构建成功！");
         System.out.println("  树高度: " + height);
@@ -87,7 +80,7 @@ public class VPTreeTest {
         VPTree tree = new VPTree(config);
         tree.buildIndex(dataset, metric);
 
-        VectorData queryPoint = new VectorData(100, new double[] { 5.0, 5.0 });
+        VectorData queryPoint = new VectorData(100, new double[] {5.0, 5.0});
         double radius = 3.0;
 
         System.out.println("查询点: (5.0, 5.0)");
@@ -104,8 +97,7 @@ public class VPTreeTest {
             }
         }
 
-        assertEquals(expectedIds.size(), results.size(),
-                "结果数量应与预期一致");
+        assertEquals(expectedIds.size(), results.size(), "结果数量应与预期一致");
 
         Set<Integer> actualIds = new HashSet<>();
         for (MetricSpaceData d : results) {
@@ -127,7 +119,7 @@ public class VPTreeTest {
         VPTree tree = new VPTree(config);
         tree.buildIndex(dataset, metric);
 
-        VectorData queryPoint = new VectorData(100, new double[] { 5.0, 5.0 });
+        VectorData queryPoint = new VectorData(100, new double[] {5.0, 5.0});
         int k = 3;
 
         System.out.println("查询点: (5.0, 5.0)");
@@ -171,12 +163,8 @@ public class VPTreeTest {
     void testSphericalPartition() {
         System.out.println("\n=== 测试4: 球形划分验证 ===");
 
-        TreeConfig verboseConfig = new TreeConfig.Builder()
-                .maxLeafSize(5)
-                .minTreeHeight(2)
-                .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT)
-                .randomSeed(42)
-                .verbose(true)
+        TreeConfig verboseConfig = new TreeConfig.Builder().maxLeafSize(5).minTreeHeight(2)
+                .pivotStrategy(TreeConfig.PivotSelectionStrategy.FFT).randomSeed(42).verbose(true)
                 .build();
 
         VPTree tree = new VPTree(verboseConfig);
@@ -197,8 +185,8 @@ public class VPTreeTest {
         VPTree tree = new VPTree(config);
         tree.buildIndex(dataset, metric);
 
-        VectorData queryPoint = new VectorData(100, new double[] { 5.0, 5.0 });
-        double[] radii = { 1.0, 2.0, 3.0, 5.0, 10.0 };
+        VectorData queryPoint = new VectorData(100, new double[] {5.0, 5.0});
+        double[] radii = {1.0, 2.0, 3.0, 5.0, 10.0};
 
         System.out.println("查询点: (5.0, 5.0)");
         System.out.printf("%-10s | %-10s | %-15s%n", "半径", "结果数", "距离计算");
@@ -217,8 +205,8 @@ public class VPTreeTest {
             }
             assertEquals(expected, results.size(), "半径" + radius + "的结果数量应正确");
 
-            System.out.printf("%-10.1f | %-10d | %-15d%n",
-                    radius, results.size(), tree.getDistanceComputations());
+            System.out.printf("%-10.1f | %-10d | %-15d%n", radius, results.size(),
+                    tree.getDistanceComputations());
         }
 
         System.out.println("测试通过！\n");
